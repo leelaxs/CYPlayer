@@ -3702,13 +3702,13 @@ vm_size_t memory_usage(void) {
     
     self.controlView.selectTableView.didSelectRowAtIndexPath = ^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
         __strong typeof(_self) self = _self;
-        if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:ChangeDefinition:)])
-        {
+//        if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:changeRate:)])
+//        {
             NSString * rate = [ratesMarray objectAtIndex:indexPath.row];
             self.rate = [rate doubleValue];
 
 //            [self.delegate CYFFmpegPlayer:self changeRate:[rate doubleValue]];
-        }
+//        }
         _cyAnima(^{
             _cyHiddenViews(@[self.controlView.selectTableView]);
         });
