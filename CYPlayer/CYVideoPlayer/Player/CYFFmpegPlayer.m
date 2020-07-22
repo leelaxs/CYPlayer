@@ -93,7 +93,7 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 
 
 #define LOCAL_MIN_BUFFERED_DURATION   0.2
-#define LOCAL_MAX_BUFFERED_DURATION   0.4
+#define LOCAL_MAX_BUFFERED_DURATION   0.8
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 8.0
 #define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
@@ -3705,9 +3705,9 @@ vm_size_t memory_usage(void) {
         if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:ChangeDefinition:)])
         {
             NSString * rate = [ratesMarray objectAtIndex:indexPath.row];
-            
+            self.rate = [rate doubleValue];
 
-            [self.delegate CYFFmpegPlayer:self changeRate:[rate doubleValue]];
+//            [self.delegate CYFFmpegPlayer:self changeRate:[rate doubleValue]];
         }
         _cyAnima(^{
             _cyHiddenViews(@[self.controlView.selectTableView]);
