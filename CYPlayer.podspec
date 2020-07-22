@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "2.4.15"
+s.version      = "2.5.1"
 s.summary      = 'A iOS video player, using AVPlayer&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg'
 s.description  = 'A iOS video player, using AVFoundation&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -104,7 +104,7 @@ sss.source_files = 'CYPlayer/CYVideoPlayer/Header/*.{h}'
 end
 
 ss.subspec 'Model' do |sss|
-sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
+sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m,mm,cpp}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
 sss.dependency 'CYPlayer/CYVideoPlayer/Resource'
 sss.dependency 'CYFFmpeg'
