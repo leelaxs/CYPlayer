@@ -22,6 +22,9 @@ typedef NSInteger(^CYPlayerSettingsSetCurrentSelectionsIndex)();
 
 typedef NSString *(^CYPlayerSettingsNextAutoPlaySelectionsPath)();
 
+typedef NSString *(^CYPlayerSettingPreviousPlaySelectionsPath)();
+
+
 @class UIImage, UIColor;
 
 @interface CYVideoPlayerSettings : NSObject
@@ -83,6 +86,10 @@ typedef NSString *(^CYPlayerSettingsNextAutoPlaySelectionsPath)();
 
 /// 外部设置待下一集自动播放的链接
 @property (nonatomic, copy, readwrite) CYPlayerSettingsNextAutoPlaySelectionsPath nextAutoPlaySelectionsPath;
+
+/// 配置上一集的播放链接
+@property (nonatomic, copy) CYPlayerSettingPreviousPlaySelectionsPath previousSelectionPath;
+
 
 + (instancetype)sharedVideoPlayerSettings;
 

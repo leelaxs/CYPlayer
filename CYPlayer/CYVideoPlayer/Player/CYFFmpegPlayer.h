@@ -247,6 +247,10 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)stop;
 
+- (void)playNextVideo;
+
+- (void)playPreviousVideo;
+
 - (void)hideBackBtn;
 
 - (void)showBackBtn;

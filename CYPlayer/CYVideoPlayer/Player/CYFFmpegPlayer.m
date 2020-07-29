@@ -1784,7 +1784,7 @@ CYAudioManagerDelegate>
         }else{
             time = 0.04/self.rate;
         }
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (time - 0.003) * NSEC_PER_SEC);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (time - 0.005) * NSEC_PER_SEC);
         dispatch_after(popTime, _videoQueue, ^(void){
             [weakSelf videoTick];
         });
@@ -2316,14 +2316,9 @@ CYAudioManagerDelegate>
                     interval = [self presentVideoFrame:frame];//呈现视频
                     //                    interval = 0;
                     
-                    //快进视频帧
-                    NSInteger frameCount = delta/(frame.duration/self.rate);
-                    if (_videoFrames.count > frameCount) {
-                        [_videoFrames removeObjectsInRange:NSMakeRange(0, frameCount)];
-                        _videoBufferedDuration -= frame.duration*frameCount;
-                    }else{
-                        [_videoFrames removeAllObjects];
-                        _videoBufferedDuration = 0;
+                    //快进视频帧（跳一针）
+                    if (_videoFrames.count > 0) {
+                        [_videoFrames removeObjectAtIndex:0];
                     }
                 }
             }
@@ -4316,6 +4311,24 @@ vm_size_t memory_usage(void) {
     _cyAnima(^{
         self.hideControl = NO;
     });
+}
+
+- (void)playNextVideo {
+    if (self.settings.nextAutoPlaySelectionsPath) {
+        NSString * path = self.settings.nextAutoPlaySelectionsPath();
+        if (path.length > 0) {
+            [self changeSelectionsPath:path];
+        }
+    }
+}
+
+- (void)playPreviousVideo{
+    if (self.settings.previousSelectionPath) {
+        NSString *path = self.settings.previousSelectionPath();
+        if (path.length > 0) {
+            [self changeSelectionsPath:path];
+        }
+    }
 }
 
 @end
