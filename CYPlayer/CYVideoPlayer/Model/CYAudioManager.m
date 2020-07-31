@@ -41,7 +41,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags    *i
 @property (readonly) UInt32             numOutputChannels;
 @property (readonly) Float64            samplingRate;
 @property (readonly) UInt32             numBytesPerSample;
-@property (readwrite) Float32           outputVolume;
+@property (readonly) Float32           outputVolume;
 @property (readonly) BOOL               playing;
 @property (readonly, strong) NSString   *audioRoute;
 
@@ -89,7 +89,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags    *i
     self = [super init];
     if (self) {
         _outData = (float *)calloc(MAX_FRAME_SIZE*MAX_CHAN, sizeof(float));
-        _outputVolume = 0.5;
+//        _outputVolume = 0.5;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioSessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
     }
     return self;
