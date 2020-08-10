@@ -1756,19 +1756,32 @@ CYAudioManagerDelegate>
     
     if (self.playing)
     {
-        const NSUInteger leftFrames =
-        (_decoder.validVideo ? _videoFrames.count : 0) +
-        (_decoder.validAudio ? _audioFrames.count : 0);
+        NSUInteger leftAFrames = (_decoder.validAudio ? _audioFrames.count : 0);
+        
+        NSUInteger leftVFrames = (_decoder.validVideo ? _videoFrames.count : 0);
+        
+        NSUInteger leftFrames = leftAFrames + leftVFrames;
 
         if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
-            if (!leftFrames ||
-                (_videoBufferedDuration < _maxBufferedDuration ||
-                 _audioBufferedDuration <= 0)
-//                ||
-//                !(_audioBufferedDuration > _maxBufferedDuration)
-                )
-            {
+            BOOL need_decode = NO;
+            if (!need_decode && _decoder.validVideo && (leftVFrames <= 0 || leftAFrames <= 0 )) {
+                need_decode = YES;
+            }
+            
+            if (!need_decode && _decoder.validAudio && (leftAFrames <= 0 )) {
+                need_decode = YES;
+            }
+            
+            if (!need_decode && _audioBufferedDuration < _maxBufferedDuration) {
+                need_decode = YES;
+            }
+            
+            if (!need_decode && _videoBufferedDuration < _maxBufferedDuration) {
+                need_decode = YES;
+            }
+            
+            if (need_decode){
                 //            [self asyncDecodeFrames];
                 [self concurrentAsyncDecodeFrames];
             }
@@ -3664,6 +3677,7 @@ vm_size_t memory_usage(void) {
     __weak typeof(self) _self = self;
     
     _cyAnima(^{
+        __strong typeof(_self) self = _self;
         _cyShowViews(@[self.controlView.selectTableView]);
         self.hideControl = YES;
     });
@@ -3678,6 +3692,7 @@ vm_size_t memory_usage(void) {
     };
     
     self.controlView.selectTableView.cellForRowAtIndexPath = ^UITableViewCell *(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        __strong typeof(_self) self = _self;
         UITableViewCell * cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
         cell.backgroundColor = [UIColor clearColor];
         cell.textLabel.textColor = [UIColor whiteColor];

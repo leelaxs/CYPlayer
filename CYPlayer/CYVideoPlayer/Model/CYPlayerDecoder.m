@@ -649,6 +649,7 @@ static int interrupt_callback(void *ctx);
     dispatch_semaphore_t _avReadFrameLock;
     dispatch_semaphore_t _avSendAndReceivePacketLock;
     dispatch_queue_t    _concurrentDecodeQueue;
+    dispatch_group_t    _concurrentGroup;
     
     //滤镜相关
     AVFilterContext     *_buffersrc_ctx;
@@ -1002,6 +1003,7 @@ static int interrupt_callback(void *ctx);
         _swrContextLock = dispatch_semaphore_create(1);//初始化锁
         _swsContextLock = dispatch_semaphore_create(1);//初始化锁
         _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_CONCURRENT);
+        _concurrentGroup = dispatch_group_create();
         _rate = 1.0;
     }
     return self;
@@ -1114,6 +1116,7 @@ static int interrupt_callback(void *ctx);
     av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
     av_dict_set(&_options, "re", "25", 0);
     av_dict_set(&_options, "r", "25", 0);
+    av_dict_set(&_options, "qp", "0", 0);
 //    av_dict_set_int(&_options, "video_track_timescale", 25, 0);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
@@ -2433,7 +2436,10 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 - (void) asyncDecodeFrames:(CGFloat)minDuration audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid compeletionHandler:(CYPlayerCompeletionThread)compeletion
 {
     __weak typeof(&*self)weakSelf = self;
-    dispatch_async(_concurrentDecodeQueue, ^{
+    dispatch_group_async(_concurrentGroup, _concurrentDecodeQueue, ^{
+//
+//    })
+//    dispatch_async(_concurrentDecodeQueue, ^{
         __strong typeof(&*weakSelf)strongSelf = weakSelf;
         
         if (!strongSelf) { return; }
@@ -2752,6 +2758,21 @@ error:
 
 - (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
+    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+        NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:200];
+        for (CYPlayerFrame * frame in frames)
+        {
+            if (frame.position >= targetPos)
+            {
+                [result addObject:frame];
+            }
+        }
+        compeletion(result, YES);
+    }];
+}
+
+- (void) old_asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
+{
     if (_videoStream == -1 &&
         _audioStream == -1)
         return;
@@ -2859,6 +2880,44 @@ error:
 }
 
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion
+{
+    if (_videoStream == -1 &&
+        _audioStream == -1)
+        return;
+    
+    __block NSMutableArray * framesArrayGroup = [[NSMutableArray alloc] initWithCapacity:10000];
+    
+    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+        [framesArrayGroup addObjectsFromArray:frames];
+        NSLog(@"Decode Task 1 Finish");
+    }];
+    
+    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+        [framesArrayGroup addObjectsFromArray:frames];
+        NSLog(@"Decode Task 2 Finish");
+    }];
+    
+//    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+//        [framesArrayGroup addObjectsFromArray:frames];
+//        NSLog(@"Decode Task 3 Finish");
+//    }];
+//    
+//    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+//        [framesArrayGroup addObjectsFromArray:frames];
+//        NSLog(@"Decode Task 4 Finish");
+//    }];
+    
+    
+    dispatch_group_notify(_concurrentGroup, _concurrentDecodeQueue, ^{
+        
+        compeletion(framesArrayGroup, YES);
+        
+        NSLog(@"All Decode Task Finish");
+    });
+    
+}
+
+- (void) old_concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
     if (_videoStream == -1 &&
         _audioStream == -1)
