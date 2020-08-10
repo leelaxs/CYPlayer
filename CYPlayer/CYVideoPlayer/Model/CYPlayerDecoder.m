@@ -1001,7 +1001,7 @@ static int interrupt_callback(void *ctx);
         _avSendAndReceivePacketLock = dispatch_semaphore_create(1);//初始化锁
         _swrContextLock = dispatch_semaphore_create(1);//初始化锁
         _swsContextLock = dispatch_semaphore_create(1);//初始化锁
-        _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_SERIAL);
+        _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_CONCURRENT);
         _rate = 1.0;
     }
     return self;
@@ -2867,7 +2867,7 @@ error:
     NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
     if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"])
     {
-        threadCount = 1;
+        threadCount = 4;
     }
     for (int i = 0; i < threadCount; i++)
     {

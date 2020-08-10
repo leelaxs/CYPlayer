@@ -1125,7 +1125,7 @@ CYAudioManagerDelegate>
     
     if (!error && decoder) {
         _decoder        = decoder;
-        if (!_asyncDecodeQueue) _asyncDecodeQueue  = dispatch_queue_create("CYPlayer AsyncDecode", DISPATCH_QUEUE_SERIAL);
+        if (!_asyncDecodeQueue) _asyncDecodeQueue = dispatch_queue_create("CYPlayer AsyncDecode", DISPATCH_QUEUE_SERIAL);
         if (!_videoFrames)_videoFrames    = [NSMutableArray array];
         if (!_audioFrames)_audioFrames    = [NSMutableArray array];
         
@@ -1763,7 +1763,8 @@ CYAudioManagerDelegate>
         if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
             if (!leftFrames ||
-                (_videoBufferedDuration < _maxBufferedDuration)
+                (_videoBufferedDuration < _maxBufferedDuration ||
+                 _audioBufferedDuration <= 0)
 //                ||
 //                !(_audioBufferedDuration > _maxBufferedDuration)
                 )
