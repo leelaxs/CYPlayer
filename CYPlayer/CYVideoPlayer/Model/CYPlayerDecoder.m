@@ -2901,7 +2901,7 @@ error:
 //        [framesArrayGroup addObjectsFromArray:frames];
 //        NSLog(@"Decode Task 3 Finish");
 //    }];
-//    
+//
 //    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
 //        [framesArrayGroup addObjectsFromArray:frames];
 //        NSLog(@"Decode Task 4 Finish");
@@ -3197,10 +3197,16 @@ error:
                 CGFloat curr_position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase;
                 if (curr_position >= self.targetPosition)
                 {
-                    CYAudioFrame * frame = [self handleAudioFrame:audioFrame];
-                    if (frame) {
+                    @synchronized (self)
+                    {
+//                        NSLog(@"%@ in", [NSThread currentThread]);
+                        CYAudioFrame * frame = [self handleAudioFrame:audioFrame];
+                        if (frame) {
+                            
+                            result_frame = frame;
+                        }
                         
-                        result_frame = frame;
+//                        NSLog(@"%@ out", [NSThread currentThread]);
                     }
                 }
             }
