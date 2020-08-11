@@ -416,7 +416,7 @@ enum {
         //创建纹理
         
         //加载着色器
-        
+        [self createFrameAndRenderBuffer];
 //        glGenFramebuffers(1, &_framebuffer);
 //        glGenRenderbuffers(1, &_renderbuffer);
 //        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);

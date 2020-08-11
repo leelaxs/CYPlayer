@@ -20,6 +20,7 @@
 #import "CYVideoPlayerResources.h"
 #import "CYHardwareDecompressVideo.h"
 #import "CYSonicManager.h"
+#import <malloc/malloc.h>
 
 #define CY_DocumentDir [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
 #define CY_BundlePath(res) [[NSBundle mainBundle] pathForResource:res ofType:nil]
@@ -2468,6 +2469,22 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
             
             CYPlayerFrame * frame = [weakSelf handlePacket:packet audioFrame:audioFrame videoFrame:videoFrame picture:picture isPictureValid:isPictureValid];
+//            NSLog(@"objc对象实际分配的内存大小: %zd", malloc_size((__bridge const void *)(frame)));
+
+            if ([frame isKindOfClass:[CYVideoFrameYUV class]]) {
+                CGFloat yL = ((CYVideoFrameYUV *)frame).luma.length / 1024.0 / 1024.0;
+                CGFloat uL = ((CYVideoFrameYUV *)frame).chromaR.length / 1024.0 / 1024.0;
+                CGFloat vL = ((CYVideoFrameYUV *)frame).chromaB.length / 1024.0 / 1024.0;
+                #ifdef DEBUG
+                NSLog(@"Data Length: Y: %.2f MB, U: %.2fMB, V: %.2fMB", yL, uL, vL);
+                #endif
+                if (yL <= 0 || uL <= 0 || vL <= 0) {
+                    av_packet_unref(packet);
+                    continue;
+                }
+            }
+
+            
             if (frame)
             {
                 [result addObject:frame];
