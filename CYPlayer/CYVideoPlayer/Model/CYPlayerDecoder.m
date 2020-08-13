@@ -2476,7 +2476,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 CGFloat uL = ((CYVideoFrameYUV *)frame).chromaR.length / 1024.0 / 1024.0;
                 CGFloat vL = ((CYVideoFrameYUV *)frame).chromaB.length / 1024.0 / 1024.0;
                 #ifdef DEBUG
-                NSLog(@"Data Length: Y: %.2f MB, U: %.2fMB, V: %.2fMB", yL, uL, vL);
+//                NSLog(@"Data Length: Y: %.2f MB, U: %.2fMB, V: %.2fMB", yL, uL, vL);
                 #endif
                 if (yL <= 0 || uL <= 0 || vL <= 0) {
                     av_packet_unref(packet);
@@ -2906,12 +2906,12 @@ error:
     
     [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
         [framesArrayGroup addObjectsFromArray:frames];
-        NSLog(@"Decode Task 1 Finish");
+//        NSLog(@"Decode Task 1 Finish");
     }];
     
     [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
         [framesArrayGroup addObjectsFromArray:frames];
-        NSLog(@"Decode Task 2 Finish");
+//        NSLog(@"Decode Task 2 Finish");
     }];
     
 //    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
@@ -2929,7 +2929,7 @@ error:
         
         compeletion(framesArrayGroup, YES);
         
-        NSLog(@"All Decode Task Finish");
+//        NSLog(@"All Decode Task Finish");
     });
     
 }
