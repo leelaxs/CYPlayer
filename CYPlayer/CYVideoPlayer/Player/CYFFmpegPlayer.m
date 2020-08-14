@@ -1746,6 +1746,7 @@ CYAudioManagerDelegate>
 - (void) videoTick
 {
     CFAbsoluteTime tickStartTime = CFAbsoluteTimeGetCurrent();
+#ifdef DEBUG
     if (!_videoTickStartTime) {
         _videoTickStartTime = CFAbsoluteTimeGetCurrent();
     }
@@ -1754,6 +1755,7 @@ CYAudioManagerDelegate>
 //         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
         _videoTickStartTime = CFAbsoluteTimeGetCurrent();
     }
+#endif
     __weak typeof(&*self)weakSelf = self;
     CGFloat interval = 0;
     if (!_buffered)
