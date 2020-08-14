@@ -92,8 +92,8 @@ NSString * const CYPlayerParameterDisableDeinterlacing = @"CYPlayerParameterDisa
 static NSMutableDictionary * gHistory = nil;//播放记录
 
 
-#define LOCAL_MIN_BUFFERED_DURATION   0.2
-#define LOCAL_MAX_BUFFERED_DURATION   0.8
+#define LOCAL_MIN_BUFFERED_DURATION   1
+#define LOCAL_MAX_BUFFERED_DURATION   4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 8.0
 #define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
@@ -157,6 +157,7 @@ CYAudioManagerDelegate>
     NSTimeInterval      _debugStartTime;
     NSUInteger          _debugAudioStatus;
     NSDate              *_debugAudioStatusTS;
+    CFAbsoluteTime      _videoTickStartTime;
 #endif
     
     //当前清晰度
@@ -249,6 +250,7 @@ CYAudioManagerDelegate>
         [self resetSetting];
         [self setupPlayerWithPath:path parameters:parameters];
         self.rate = 1.0;
+        [[CYSonicManager sonicManager] setPlaySpeed:1.0];
     }
     return self;
 }
@@ -1743,6 +1745,15 @@ CYAudioManagerDelegate>
 
 - (void) videoTick
 {
+    CFAbsoluteTime tickStartTime = CFAbsoluteTimeGetCurrent();
+    if (!_videoTickStartTime) {
+        _videoTickStartTime = CFAbsoluteTimeGetCurrent();
+    }
+    else{
+        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _videoTickStartTime);
+//         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
+        _videoTickStartTime = CFAbsoluteTimeGetCurrent();
+    }
     __weak typeof(&*self)weakSelf = self;
     CGFloat interval = 0;
     if (!_buffered)
@@ -1751,7 +1762,9 @@ CYAudioManagerDelegate>
         {
             _positionUpdating = NO;
         }
+
         interval = [self presentVideoFrame];
+
     }
     
     if (self.playing)
@@ -1765,7 +1778,7 @@ CYAudioManagerDelegate>
         if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
             BOOL need_decode = NO;
-            if (!need_decode && _decoder.validVideo && (leftVFrames <= 0 || leftAFrames <= 0 )) {
+            if (!need_decode && _decoder.validVideo && (leftVFrames <= 0 || leftAFrames <= 0)) {
                 need_decode = YES;
             }
             
@@ -1773,13 +1786,13 @@ CYAudioManagerDelegate>
                 need_decode = YES;
             }
             
-            if (!need_decode && _audioBufferedDuration < _maxBufferedDuration) {
+            if (!need_decode && _audioBufferedDuration < _minBufferedDuration) {
                 need_decode = YES;
             }
             
-            if (!need_decode && _videoBufferedDuration < _maxBufferedDuration) {
-                need_decode = YES;
-            }
+//            if (need_decode && _videoBufferedDuration >= _maxBufferedDuration) {
+//                need_decode = NO;
+//            }
             
             if (need_decode){
                 //            [self asyncDecodeFrames];
@@ -1787,103 +1800,109 @@ CYAudioManagerDelegate>
             }
         }
         
-        const NSTimeInterval correction = [self tickCorrection];
-        NSTimeInterval time = MAX(interval + correction, 0.01);
-        
+//        const NSTimeInterval correction = [self tickCorrection];
+//        NSTimeInterval time = MAX(interval + correction, 0.01);
+        NSTimeInterval time = 0;
         if (self.rate == 0) {
             self.rate = 1.0;
         }
         if (interval > 0) {
-            time = interval/self.rate;
+            time = interval;
         }else{
-            time = 0.04/self.rate;
+            time = (1.0 / CYPlayerDecoderMaxFPS) / self.rate;
         }
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (time - 0.005) * NSEC_PER_SEC);
-        dispatch_after(popTime, _videoQueue, ^(void){
+        
+        CFAbsoluteTime tickLinkTime = CFAbsoluteTimeGetCurrent() - tickStartTime;
+        CGFloat popTime = (time - tickLinkTime - 0.005);
+//        NSLog(@"%f",popTime*1000);
+        dispatch_time_t popDispatchTime = dispatch_time(DISPATCH_TIME_NOW,  popTime* NSEC_PER_SEC);
+        dispatch_after(popDispatchTime, _videoQueue, ^(void){
             [weakSelf videoTick];
         });
+        
     }
-    
+           
     
 }
 
 
-- (void) audioCallbackFillData: (float *) outData
+- (CGFloat) audioCallbackFillData: (float *) outData
                      numFrames: (UInt32) numFrames
                    numChannels: (UInt32) numChannels
 {
+    CGFloat duration = 0.0;
 #ifdef USE_AUDIOTOOL
     //fillSignalF(outData,numFrames,numChannels);
     //return;
-    
     if (_buffered && _audioFrames.count <= 0) {
         memset(outData, 0, numFrames * numChannels * sizeof(float));
-        return;
+        return 0.0;
     }
     
-    @autoreleasepool {
+    
+    while ( numFrames > 0) {
         
-        while (numFrames > 0) {
-            
-            if (!_currentAudioFrame) {
-                //_currentAudioFrame 为空
-                @synchronized(_audioFrames) {
+        if (!_currentAudioFrame) {
+            //_currentAudioFrame 为空
+            @synchronized(_audioFrames) {
+                
+                NSUInteger count = _audioFrames.count;
+                
+                if (count > 0) {
                     
-                    NSUInteger count = _audioFrames.count;
+                    CYAudioFrame *frame = _audioFrames[0];
                     
-                    if (count > 0) {
-                        
-                        CYAudioFrame *frame = _audioFrames[0];
-                        
 #ifdef DUMP_AUDIO_DATA
-                        LoggerAudio(2, @"Audio frame position: %f", frame.position);
+                    LoggerAudio(2, @"Audio frame position: %f", frame.position);
 #endif
-                        [_audioFrames removeObjectAtIndex:0];
-                        _audioPosition = frame.position;
-                        _currentAudioFramePos = 0;
-                        _audioBufferedDuration -= frame.duration;
-                        _currentAudioFrame = [[CYSonicManager sonicManager] setFloatData:frame.samples];
-                    }
+                    [_audioFrames removeObjectAtIndex:0];
+                    _audioPosition = frame.position;
+                    _currentAudioFramePos = 0;
+                    _audioBufferedDuration -= frame.duration;
+                    _currentAudioFrame = [[CYSonicManager sonicManager] setFloatData:frame.samples];
+                    duration = frame.duration;
                 }
-            }
-            
-            if (_positionUpdating) {
-                _positionUpdating = NO;
-            }
-            
-            if (_currentAudioFrame) {
-                
-                const void *bytes = (Byte *)(_currentAudioFrame.bytes) + _currentAudioFramePos;
-                const NSUInteger bytesLeft = (_currentAudioFrame.length - _currentAudioFramePos);
-                const NSUInteger frameSizeOf = numChannels * sizeof(float);
-                const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
-                const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
-                
-                //从bytes拷贝到outData 长度为bytesToCopy
-                memcpy(outData, bytes, bytesToCopy);
-                numFrames -= framesToCopy;
-                outData += framesToCopy * numChannels;
-                
-                if (bytesToCopy < bytesLeft){
-                    _currentAudioFramePos += bytesToCopy;
-                }
-                else{
-                    _currentAudioFrame = nil;
-                }
-                
-            } else {
-                
-                memset(outData, 0, numFrames * numChannels * sizeof(float));
-                //LoggerStream(1, @"silence audio");
-#ifdef DEBUG
-                _debugAudioStatus = 3;
-                _debugAudioStatusTS = [NSDate date];
-#endif
-                break;
             }
         }
-    }
+        
+        if (_positionUpdating) {
+            _positionUpdating = NO;
+        }
+        
+        if (_currentAudioFrame) {
+            
+            const void *bytes = (Byte *)(_currentAudioFrame.bytes) + _currentAudioFramePos;
+            const NSUInteger bytesLeft = (_currentAudioFrame.length - _currentAudioFramePos);
+            const NSUInteger frameSizeOf = numChannels * sizeof(float);
+            const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
+            const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
+            
+            //从bytes拷贝到outData 长度为bytesToCopy
+            memcpy(outData, bytes, bytesToCopy);
+            numFrames -= framesToCopy;
+            outData += framesToCopy * numChannels;
+            
+            if (bytesToCopy < bytesLeft){
+                _currentAudioFramePos += bytesToCopy;
+            }
+            else{
+                _currentAudioFrame = nil;
+            }
+            
+        } else {
+            
+            memset(outData, 0, numFrames * numChannels * sizeof(float));
+            //LoggerStream(1, @"silence audio");
+#ifdef DEBUG
+            _debugAudioStatus = 3;
+            _debugAudioStatusTS = [NSDate date];
 #endif
+            break;
+        }
+    }
+    
+#endif
+    return duration;
 }
 
 
@@ -1894,12 +1913,13 @@ CYAudioManagerDelegate>
 
     if (on && _decoder.validAudio) {
         audioManager.delegate = self;
-        
+        __weak typeof(&*self)weakSelf = self;
         audioManager.outputBlock = ^(float *outData, UInt32 numFrames, UInt32 numChannels) {
-//            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
-            [self audioCallbackFillData: outData numFrames:numFrames numChannels:numChannels];
-//            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+            CGFloat duration = [weakSelf audioCallbackFillData: outData numFrames:numFrames numChannels:numChannels];
+            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
 //            NSLog(@"Linked audioCallbackFillData in %f ms", linkTime *1000.0);
+            sleep(ABS(duration - (CGFloat)linkTime));
         };
         
         [audioManager play];
@@ -2116,6 +2136,7 @@ CYAudioManagerDelegate>
             }
         }
         
+        
         if ([self.decoder validVideo])
         {
             
@@ -2146,8 +2167,8 @@ CYAudioManagerDelegate>
         }
         
         CGFloat interval = 0.1;
-        const NSTimeInterval correction = [self tickCorrection];
-        const NSTimeInterval time = MAX(interval + correction, 0.01);
+//        const NSTimeInterval correction = [self tickCorrection];
+        const NSTimeInterval time = interval;//MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW,  0.01 * NSEC_PER_SEC);
         dispatch_after(popTime, _progressQueue, ^(void){
             [weakSelf progressTick];
@@ -2330,13 +2351,14 @@ CYAudioManagerDelegate>
                     interval = [self presentVideoFrame:frame];//呈现视频
                     //                    interval = 0;
                     
-                    //快进视频帧（跳一针）
-                    if (_videoFrames.count > 0) {
-                        [_videoFrames removeObjectAtIndex:0];
-                    }
+//                    //快进视频帧（跳一针）
+//                    if (_videoFrames.count > 0) {
+//                        [_videoFrames removeObjectAtIndex:0];
+//                    }
                 }
             }
         }
+//        NSLog(@"%f",_videoBufferedDuration);
         
     } else if (_decoder.validAudio) {
         

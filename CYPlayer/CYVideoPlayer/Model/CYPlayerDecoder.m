@@ -32,7 +32,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
-NSInteger CYPlayerDecoderMaxFPS = 26;
+NSInteger CYPlayerDecoderMaxFPS = 30;
 NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
 
 # pragma mark - struct CYPicture
@@ -1941,6 +1941,30 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     
 }
 
+
+- (BOOL)discardVideoFrameWithPosition:(CGFloat)position
+                            OriginFPS:(CGFloat)o_fps
+                            TargetFPS:(CGFloat)t_fps
+{
+    if (o_fps <= t_fps || position == 0.0) {
+        return NO;
+    }
+    
+    //符合降帧规则的帧,丢弃
+    CGFloat discard_rate = (o_fps - t_fps) / o_fps;//(30 - 25) / 30  原有30fps的视频降帧到25fps,降帧率为1/6(六分之一)
+    NSUInteger hashCount = (NSUInteger)(1 / discard_rate) + 1;
+    
+    NSUInteger position_index = (NSInteger)(position * o_fps);//计算出帧的位置
+    
+    NSUInteger hash = position_index % hashCount;
+    
+    if (hash == hashCount - 1) {
+        return YES;
+    }
+    
+    return NO;
+}
+
 - (CYVideoFrame *) handleVideoFrame:(AVFrame *)videoFrame Picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     if (!videoFrame->data[0])
@@ -1952,6 +1976,10 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     
     CGFloat position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
     CGFloat duration = 0.0;
+    
+    if ([self discardVideoFrameWithPosition:position OriginFPS:_fps TargetFPS:CYPlayerDecoderMaxFPS * self.rate]) {
+        return nil;
+    }
     
     const int64_t frameDuration = av_frame_get_pkt_duration(videoFrame);
     if (frameDuration) {
@@ -1966,11 +1994,11 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     }
     
     //判断是否丢弃帧
-    if ( _fps >= CYPlayerDecoderMaxFPS)
+    if ( _fps >= CYPlayerDecoderMaxFPS * self.rate)
     {
-        CGFloat fps_scale =  _fps / CYPlayerDecoderMaxFPS;
+        CGFloat fps_scale =  _fps / (CYPlayerDecoderMaxFPS / self.rate) ;
         
-        duration *= fps_scale;
+        duration *= fps_scale;//更新降帧之后的每帧时延 例如30fps,降为25,则时延有0.3333增加为0.3846
         
     }
     
@@ -2336,6 +2364,8 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase; //* self.rate;
     CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase; //* self.rate;
+    
+    duration *= self.rate;
     
     NSInteger numFrames;
     

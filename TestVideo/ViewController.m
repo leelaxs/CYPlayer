@@ -80,9 +80,9 @@
 {
     //    [self presentViewController:[[PlayerViewController alloc] init] animated:YES completion:nil];
     if (sender.tag == 100) {
-        PlayerViewController * pvc = [[PlayerViewController alloc] init];
-        pvc.assetURL = [NSURL URLWithString:@"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4"];
-        [self.navigationController pushViewController:pvc animated:YES];
+//        PlayerViewController * pvc = [[PlayerViewController alloc] init];
+//        pvc.assetURL = [NSURL URLWithString:@"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4"];
+//        [self.navigationController pushViewController:pvc animated:YES];
     }
     else if (sender.tag == 200) {
 //        PlayerViewController * pvc = [[PlayerViewController alloc] init];
@@ -99,11 +99,11 @@
 //            [audio setFilePath:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%ld", i] ofType:@"pcm"]];
 //        }
         
-        RTSPViewController * vc = [[RTSPViewController alloc] init];
-//        UIViewController *vc = [[MainViewController alloc] init];
-//        UIViewController *vc = [[CYFFmpegViewController alloc] init];
-//        
-        [self.navigationController pushViewController:vc animated:YES];
+//        RTSPViewController * vc = [[RTSPViewController alloc] init];
+////        UIViewController *vc = [[MainViewController alloc] init];
+////        UIViewController *vc = [[CYFFmpegViewController alloc] init];
+////        
+//        [self.navigationController pushViewController:vc animated:YES];
     }
 }
 
