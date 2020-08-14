@@ -1,4 +1,13 @@
 # CYPlayer
+
+<iframe 
+    height=736 
+    width=414 
+    src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/cut.mov" 
+    frameborder=0 
+    allowfullscreen>
+</iframe>
+
 ```ruby
 #podfile添加如下行
 pod 'CYPlayer'
