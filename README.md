@@ -8,7 +8,7 @@ pod 'CYPlayer'
 
 ### Sample
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/small.gif" />
+<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/small.gif" />
 
 <img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_1.png" />
 
