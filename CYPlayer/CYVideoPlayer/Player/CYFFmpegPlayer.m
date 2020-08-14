@@ -1839,66 +1839,69 @@ CYAudioManagerDelegate>
         return 0.0;
     }
     
-    
-    while ( numFrames > 0) {
-        
-        if (!_currentAudioFrame) {
-            //_currentAudioFrame 为空
-            @synchronized(_audioFrames) {
+    @autoreleasepool
+    {
+        while ( numFrames > 0) {
                 
-                NSUInteger count = _audioFrames.count;
+                if (!_currentAudioFrame) {
+                    //_currentAudioFrame 为空
+                    @synchronized(_audioFrames) {
+                        
+                        NSUInteger count = _audioFrames.count;
+                        
+                        if (count > 0) {
+                            
+                            CYAudioFrame *frame = _audioFrames[0];
+                            
+        #ifdef DUMP_AUDIO_DATA
+                            LoggerAudio(2, @"Audio frame position: %f", frame.position);
+        #endif
+                            [_audioFrames removeObjectAtIndex:0];
+                            _audioPosition = frame.position;
+                            _currentAudioFramePos = 0;
+                            _audioBufferedDuration -= frame.duration;
+//                            _currentAudioFrame = frame.samples;
+                            _currentAudioFrame = [[CYSonicManager sonicManager] setFloatData:frame.samples];
+                            duration = frame.duration;
+                        }
+                    }
+                }
                 
-                if (count > 0) {
+                if (_positionUpdating) {
+                    _positionUpdating = NO;
+                }
+                
+                if (_currentAudioFrame) {
                     
-                    CYAudioFrame *frame = _audioFrames[0];
+                    const void *bytes = (Byte *)(_currentAudioFrame.bytes) + _currentAudioFramePos;
+                    const NSUInteger bytesLeft = (_currentAudioFrame.length - _currentAudioFramePos);
+                    const NSUInteger frameSizeOf = numChannels * sizeof(float);
+                    const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
+                    const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
                     
-#ifdef DUMP_AUDIO_DATA
-                    LoggerAudio(2, @"Audio frame position: %f", frame.position);
-#endif
-                    [_audioFrames removeObjectAtIndex:0];
-                    _audioPosition = frame.position;
-                    _currentAudioFramePos = 0;
-                    _audioBufferedDuration -= frame.duration;
-                    _currentAudioFrame = [[CYSonicManager sonicManager] setFloatData:frame.samples];
-                    duration = frame.duration;
+                    //从bytes拷贝到outData 长度为bytesToCopy
+                    memcpy(outData, bytes, bytesToCopy);
+                    numFrames -= framesToCopy;
+                    outData += framesToCopy * numChannels;
+                    
+                    if (bytesToCopy < bytesLeft){
+                        _currentAudioFramePos += bytesToCopy;
+                    }
+                    else{
+                        _currentAudioFrame = nil;
+                    }
+                    
+                } else {
+                    
+                    memset(outData, 0, numFrames * numChannels * sizeof(float));
+                    //LoggerStream(1, @"silence audio");
+        #ifdef DEBUG
+                    _debugAudioStatus = 3;
+                    _debugAudioStatusTS = [NSDate date];
+        #endif
+                    break;
                 }
             }
-        }
-        
-        if (_positionUpdating) {
-            _positionUpdating = NO;
-        }
-        
-        if (_currentAudioFrame) {
-            
-            const void *bytes = (Byte *)(_currentAudioFrame.bytes) + _currentAudioFramePos;
-            const NSUInteger bytesLeft = (_currentAudioFrame.length - _currentAudioFramePos);
-            const NSUInteger frameSizeOf = numChannels * sizeof(float);
-            const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
-            const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
-            
-            //从bytes拷贝到outData 长度为bytesToCopy
-            memcpy(outData, bytes, bytesToCopy);
-            numFrames -= framesToCopy;
-            outData += framesToCopy * numChannels;
-            
-            if (bytesToCopy < bytesLeft){
-                _currentAudioFramePos += bytesToCopy;
-            }
-            else{
-                _currentAudioFrame = nil;
-            }
-            
-        } else {
-            
-            memset(outData, 0, numFrames * numChannels * sizeof(float));
-            //LoggerStream(1, @"silence audio");
-#ifdef DEBUG
-            _debugAudioStatus = 3;
-            _debugAudioStatusTS = [NSDate date];
-#endif
-            break;
-        }
     }
     
 #endif
@@ -2349,7 +2352,7 @@ CYAudioManagerDelegate>
                     [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
                     interval = [self presentVideoFrame:frame];//呈现视频
-                    //                    interval = 0;
+                    interval = 0;//videotick间隔时间最小化,以加速视频呈现
                     
 //                    //快进视频帧（跳一针）
 //                    if (_videoFrames.count > 0) {
