@@ -4,11 +4,13 @@
 #podfile添加如下行
 pod 'CYPlayer'
 ```
+
+
 ### Sample
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_1.png" />
+![](/Users/yellowei/GitHub/CYPlayer/small.gif)
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_2.png" />
+<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_1.png" />
 
 <img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_3.png" />
 
