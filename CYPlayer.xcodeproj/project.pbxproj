@@ -108,6 +108,7 @@
 		BC7A698E23CD899800B9494D /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698D23CD899800B9494D /* Shaders.metal */; };
 		BC8ADA6E22AF9D060091AB1C /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6C22AF9D050091AB1C /* logo.png */; };
 		BC8ADA6F22AF9D060091AB1C /* test.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6D22AF9D060091AB1C /* test.mp4 */; };
+		BCD3E43824E92F1400F896DE /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BCD3E43724E92F1400F896DE /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -356,6 +357,7 @@
 		BC7A698F23CD8A7700B9494D /* CYPlayerMetalShaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYPlayerMetalShaders.h; sourceTree = "<group>"; };
 		BC8ADA6C22AF9D050091AB1C /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = SOURCE_ROOT; };
 		BC8ADA6D22AF9D060091AB1C /* test.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = test.mp4; sourceTree = SOURCE_ROOT; };
+		BCD3E43724E92F1400F896DE /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F82A6770E16FD3C855878832 /* libPods-TestVideo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TestVideo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -818,6 +820,7 @@
 			isa = PBXGroup;
 			children = (
 				0E2406FB20FE15D7008BEAB5 /* CYPlayer.podspec */,
+				BCD3E43724E92F1400F896DE /* README.md */,
 				0E2406FD20FE1630008BEAB5 /* CYPlayer */,
 				84B261AF1A46A0AF00C8CAA9 /* TestVideo */,
 				84B261C91A46A0AF00C8CAA9 /* TestVideoTests */,
@@ -1007,6 +1010,7 @@
 			files = (
 				0E2407BC20FE1630008BEAB5 /* CYVideoPlayer.bundle in Resources */,
 				84B261BC1A46A0AF00C8CAA9 /* Main.storyboard in Resources */,
+				BCD3E43824E92F1400F896DE /* README.md in Resources */,
 				84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */,
 				0E5FA23D210062C5002A7597 /* cyplayer.bundle in Resources */,
 				BC8ADA6E22AF9D060091AB1C /* logo.png in Resources */,

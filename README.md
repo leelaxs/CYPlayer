@@ -8,11 +8,9 @@ pod 'CYPlayer'
 
 ### Sample
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/small.gif" />
+![prew-1.gif](https://upload-images.jianshu.io/upload_images/14117256-bc1dbe833e3c3c59.gif?imageMogr2/auto-orient/strip)
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_1.png" />
-
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_3.png" />
+![prew-2.gif](https://upload-images.jianshu.io/upload_images/14117256-db7e785040d18063.gif?imageMogr2/auto-orient/strip)
 
 ### How To Use
 ```Objective-C
