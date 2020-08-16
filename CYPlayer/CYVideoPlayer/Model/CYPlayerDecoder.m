@@ -320,23 +320,26 @@ static NSArray *collectStreams(AVFormatContext *formatCtx, enum AVMediaType code
 
 static NSData * copyFrameData(UInt8 *src, int linesize, int width, int height)
 {
-    if (linesize == width)
-    {
-        NSMutableData * data = [NSMutableData dataWithBytes:src length:width * height];
-        return data;
-    }
-    else
-    {
-        width = MIN(linesize, width);
-        NSMutableData *md = [NSMutableData dataWithLength: width * height];
-        Byte *dst = md.mutableBytes;
-        for (NSUInteger i = 0; i < height; ++i) {
-            memcpy(dst, src, width);
-            dst += width;
-            src += linesize;
+    @autoreleasepool {
+        if (linesize == width)
+        {
+            NSMutableData * data = [NSMutableData dataWithBytes:src length:width * height];
+            return data;
         }
-        return md;
+        else
+        {
+            width = MIN(linesize, width);
+            NSMutableData *md = [NSMutableData dataWithLength: width * height];
+            Byte *dst = md.mutableBytes;
+            for (NSUInteger i = 0; i < height; ++i) {
+                memcpy(dst, src, width);
+                dst += width;
+                src += linesize;
+            }
+            return md;
+        }
     }
+    
 }
 
 static BOOL isNetworkPath (NSString *path)
@@ -401,6 +404,13 @@ static int interrupt_callback(void *ctx);
 
 @implementation CYVideoFrame
 - (CYPlayerFrameType) type { return CYPlayerFrameTypeVideo; }
+
+- (void)dealloc
+{
+#ifdef DEBUG
+//    NSLog(@"%@ dealloc", NSStringFromClass([self class]));
+#endif
+}
 @end
 
 @interface CYVideoFrameRGB ()
@@ -528,6 +538,8 @@ static int interrupt_callback(void *ctx);
     
     [aCoder encodeObject:self.chromaR forKey:@"chromaR"];
 }
+
+
 @end
 
 @interface CYArtworkFrame()
@@ -2803,7 +2815,7 @@ error:
 }
 
 
-- (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
+- (void) new_asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
     [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
         NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:200];
@@ -2818,7 +2830,7 @@ error:
     }];
 }
 
-- (void) old_asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
+- (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
     if (_videoStream == -1 &&
         _audioStream == -1)
@@ -2826,7 +2838,7 @@ error:
     self.targetPosition = targetPos;
     __weak typeof(&*self)weakSelf = self;
     __block NSInteger compeletedConter = 0;
-    NSInteger threadCount = 1; //CYPlayerDecoderConCurrentThreadCount
+    NSInteger threadCount = 2; //CYPlayerDecoderConCurrentThreadCount
     for (int i = 0; i < threadCount; i++)//同时开多了容易造成decoder结束, 以及网络差的情况下接口延迟大
     {
         switch (i) {
@@ -3194,6 +3206,7 @@ error:
                             int ret = av_buffersink_get_frame(_buffersink_ctx, pFrame_out);
                             if (ret < 0)
                             {
+                                av_frame_free(&pFrame_out);
                                 continue;
                                 
                             }

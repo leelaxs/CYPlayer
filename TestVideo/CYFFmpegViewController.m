@@ -85,7 +85,7 @@
         make.height.equalTo(contentView.mas_width).multipliedBy(9.0 / 16.0);
     }];
     
-    vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
+    vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:nil];
     [vc settingPlayer:^(CYVideoPlayerSettings *settings) {
         settings.definitionTypes = CYFFmpegPlayerDefinitionLLD | CYFFmpegPlayerDefinitionLHD | CYFFmpegPlayerDefinitionLSD | CYFFmpegPlayerDefinitionLUD;
         settings.enableSelections = YES;

@@ -1044,7 +1044,7 @@ CYAudioManagerDelegate>
         _generatedPreviewImageInterrupted     = NO;
         _generatedPreviewImagesDispatchQueue  = dispatch_queue_create("CYPlayer_GeneratedPreviewImagesDispatchQueue", DISPATCH_QUEUE_SERIAL);
         _generatedPreviewImagesVideoFrames   = [NSMutableArray array];
-        [decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
         
         
         __weak CYFFmpegPlayer *weakSelf = self;
@@ -1346,6 +1346,28 @@ CYAudioManagerDelegate>
     _videoBufferedDuration = 0;
     _audioBufferedDuration = 0;
 }
+//测试用
+- (void) freeHalfBufferedFrames
+{
+    @synchronized(_videoFrames) {
+        [_videoFrames removeObjectsInRange:NSMakeRange(_videoFrames.count / 2, _videoFrames.count - _videoFrames.count / 2)];
+        
+    }
+    
+    @synchronized(_audioFrames) {
+        
+        [_audioFrames removeObjectsInRange:NSMakeRange(_audioFrames.count / 2, _audioFrames.count - _audioFrames.count / 2)];
+    }
+    
+    if (_subtitles) {
+        @synchronized(_subtitles) {
+            [_subtitles removeObjectsInRange:NSMakeRange(_subtitles.count / 2, _subtitles.count - _subtitles.count / 2)];
+        }
+    }
+    _videoBufferedDuration *= 0.5;
+    _audioBufferedDuration *= 0.5;
+}
+
 
 - (void) applicationWillResignActive: (NSNotification *)notification
 {
@@ -1752,7 +1774,7 @@ CYAudioManagerDelegate>
     }
     else{
         CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _videoTickStartTime);
-//         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
+         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
         _videoTickStartTime = CFAbsoluteTimeGetCurrent();
     }
 #endif
@@ -1799,6 +1821,10 @@ CYAudioManagerDelegate>
             if (need_decode){
                 //            [self asyncDecodeFrames];
                 [self concurrentAsyncDecodeFrames];
+            }
+            
+            if (_videoBufferedDuration >= _maxBufferedDuration * 2) {
+                [self freeHalfBufferedFrames];
             }
         }
         
