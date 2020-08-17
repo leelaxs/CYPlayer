@@ -24,6 +24,8 @@ extern int ffmpeg_main(int argc, char * argv[]);
 
 typedef BOOL(^CYPlayerDecoderInterruptCallback)(void);
 
+typedef CGFloat(^CYPlayerDecoderDynamicFPS)(void);
+
 typedef enum {
     
     cyPlayerErrorNone,
@@ -159,6 +161,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 @property (readonly, nonatomic) CGFloat startTime;
 @property (readwrite, nonatomic) BOOL disableDeinterlacing;
 @property (readwrite, nonatomic, strong) CYPlayerDecoderInterruptCallback interruptCallback;
+@property (readwrite, nonatomic, copy) CYPlayerDecoderDynamicFPS dynamicFPS_Block;
 @property (nonatomic, readwrite, assign) CYVideoDecodeType decodeType;
 
 + (id) movieDecoderWithContentPath: (NSString *) path

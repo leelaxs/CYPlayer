@@ -32,7 +32,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
-NSInteger CYPlayerDecoderMaxFPS = 30;
+NSInteger CYPlayerDecoderMaxFPS = 60;
 NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
 
 # pragma mark - struct CYPicture
@@ -1953,6 +1953,18 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     
 }
 
+- (BOOL)discardVideoFrameWithPosition:(CGFloat)position
+                            OriginFPS:(CGFloat)o_fps
+                      TargetFPS_Block:(CGFloat(^)(void))t_fps_block
+{
+    NSAssert(t_fps_block, @"error: t_fps_block is nil!");
+    CGFloat t_fps = 0;
+    if (t_fps_block) {
+        t_fps = t_fps_block();
+    }
+    return [self discardVideoFrameWithPosition:position OriginFPS:o_fps TargetFPS:t_fps];
+}
+
 
 - (BOOL)discardVideoFrameWithPosition:(CGFloat)position
                             OriginFPS:(CGFloat)o_fps
@@ -1961,7 +1973,9 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     if (o_fps <= t_fps || position == 0.0) {
         return NO;
     }
-    
+#ifdef DEBUG
+    NSLog(@"Dynamic FPS: %d", (int)t_fps);
+#endif
     //符合降帧规则的帧,丢弃
     CGFloat discard_rate = (o_fps - t_fps) / o_fps;//(30 - 25) / 30  原有30fps的视频降帧到25fps,降帧率为1/6(六分之一)
     NSUInteger hashCount = (NSUInteger)(1 / discard_rate) + 1;
@@ -1989,7 +2003,13 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     CGFloat position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
     CGFloat duration = 0.0;
     
-    if ([self discardVideoFrameWithPosition:position OriginFPS:_fps TargetFPS:CYPlayerDecoderMaxFPS * self.rate]) {
+    if ([self discardVideoFrameWithPosition:position OriginFPS:_fps TargetFPS_Block:^CGFloat{
+        if (self.dynamicFPS_Block) {
+            return self.dynamicFPS_Block();
+        }else {
+            return CYPlayerDecoderMaxFPS * self.rate;
+        }
+    }]) {
         return nil;
     }
     
@@ -2951,10 +2971,10 @@ error:
 //        NSLog(@"Decode Task 1 Finish");
     }];
     
-    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
-        [framesArrayGroup addObjectsFromArray:frames];
-//        NSLog(@"Decode Task 2 Finish");
-    }];
+//    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+//        [framesArrayGroup addObjectsFromArray:frames];
+////        NSLog(@"Decode Task 2 Finish");
+//    }];
     
 //    [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
 //        [framesArrayGroup addObjectsFromArray:frames];

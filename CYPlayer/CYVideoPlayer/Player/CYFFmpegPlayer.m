@@ -1044,7 +1044,7 @@ CYAudioManagerDelegate>
         _generatedPreviewImageInterrupted     = NO;
         _generatedPreviewImagesDispatchQueue  = dispatch_queue_create("CYPlayer_GeneratedPreviewImagesDispatchQueue", DISPATCH_QUEUE_SERIAL);
         _generatedPreviewImagesVideoFrames   = [NSMutableArray array];
-        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
         
         
         __weak CYFFmpegPlayer *weakSelf = self;
@@ -1356,16 +1356,16 @@ CYAudioManagerDelegate>
     
     @synchronized(_audioFrames) {
         
-        [_audioFrames removeObjectsInRange:NSMakeRange(_audioFrames.count / 2, _audioFrames.count - _audioFrames.count / 2)];
+//        [_audioFrames removeObjectsInRange:NSMakeRange(_audioFrames.count / 2, _audioFrames.count - _audioFrames.count / 2)];
     }
     
     if (_subtitles) {
         @synchronized(_subtitles) {
-            [_subtitles removeObjectsInRange:NSMakeRange(_subtitles.count / 2, _subtitles.count - _subtitles.count / 2)];
+//            [_subtitles removeObjectsInRange:NSMakeRange(_subtitles.count / 2, _subtitles.count - _subtitles.count / 2)];
         }
     }
     _videoBufferedDuration *= 0.5;
-    _audioBufferedDuration *= 0.5;
+//    _audioBufferedDuration *= 0.5;
 }
 
 
@@ -1774,7 +1774,10 @@ CYAudioManagerDelegate>
     }
     else{
         CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _videoTickStartTime);
-         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
+//         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
+        _decoder.dynamicFPS_Block = ^CGFloat{
+            return 1 / (CGFloat)linkTime;
+        };
         _videoTickStartTime = CFAbsoluteTimeGetCurrent();
     }
 #endif
@@ -1787,8 +1790,10 @@ CYAudioManagerDelegate>
             _positionUpdating = NO;
         }
 
+//        tickStartTime = CFAbsoluteTimeGetCurrent();
         interval = [self presentVideoFrame];
-
+//        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - tickStartTime);
+//        NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
     }
     
     if (self.playing)
@@ -2380,7 +2385,7 @@ CYAudioManagerDelegate>
                     [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
                     interval = [self presentVideoFrame:frame];//呈现视频
-                    interval = 0;//videotick间隔时间最小化,以加速视频呈现
+                    interval = 0.01;//videotick间隔时间最小化,以加速视频呈现
                     
 //                    //快进视频帧（跳一针）
 //                    if (_videoFrames.count > 0) {
