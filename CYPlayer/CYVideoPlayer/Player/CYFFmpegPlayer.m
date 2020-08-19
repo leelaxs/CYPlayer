@@ -157,8 +157,8 @@ CYAudioManagerDelegate>
     NSTimeInterval      _debugStartTime;
     NSUInteger          _debugAudioStatus;
     NSDate              *_debugAudioStatusTS;
-    CFAbsoluteTime      _videoTickStartTime;
 #endif
+    CFAbsoluteTime      _videoTickStartTime;//用于"渲染执行效率"的计算
     
     //当前清晰度
     CYFFmpegPlayerDefinitionType _definitionType;
