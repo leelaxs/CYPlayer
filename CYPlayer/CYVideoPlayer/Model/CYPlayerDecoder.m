@@ -693,6 +693,8 @@ static int interrupt_callback(void *ctx);
     NSInteger           _fileCount;
     int                 _dstWidth;
     int                 _dstHeight;
+    CYPlayerDecoderDynamicFPS _dynamicFPS_Block;//动态帧率控制
+    dispatch_queue_t __Setter_Getter_ConcurrentQueue;
     
     CVPixelBufferPoolRef _pixelBufferPool;//转CVPixelBuffer时用到的复用池
 }
@@ -719,141 +721,8 @@ static int interrupt_callback(void *ctx);
 @dynamic info;
 @dynamic videoStreamFormatName;
 @dynamic startTime;
+@dynamic dynamicFPS_Block;
 
-- (CGFloat) duration
-{
-    if (!_formatCtx)
-        return 0;
-    if (_formatCtx->duration == AV_NOPTS_VALUE)
-        return MAXFLOAT;
-    return (CGFloat)_formatCtx->duration / AV_TIME_BASE;
-}
-
-- (CGFloat) position
-{
-    return _position;
-}
-
-- (void) setPosition: (CGFloat)seconds
-{
-    _position = seconds;
-    _isEOF = NO;
-    dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
-    dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
-    if ([self validVideo]) {
-        int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
-//        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
-        avcodec_flush_buffers(_videoCodecCtx);
-        
-    }
-    
-    if ([self validAudio]) {
-        int64_t ts = (int64_t)(seconds / (_audioTimeBase));
-//        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
-        avcodec_flush_buffers(_audioCodecCtx);
-    }
-    
-    dispatch_semaphore_signal(_avReadFrameLock);//放行
-    dispatch_semaphore_signal(_avSendAndReceivePacketLock);
-}
-
-- (NSUInteger) frameWidth
-{
-    if (_dstWidth > 0) {
-        return _dstWidth;
-    }
-    NSUInteger width = _videoCodecCtx->width;
-    NSUInteger height = _videoCodecCtx->height;
-    get_video_scale_max_size(_videoCodecCtx, &width, &height);
-    return width ? width : 0;
-}
-
-- (NSUInteger) frameHeight
-{
-    if (_dstHeight > 0)
-    {
-        return _dstHeight;
-    }
-    NSUInteger width = _videoCodecCtx->width;
-    NSUInteger height = _videoCodecCtx->height;
-    get_video_scale_max_size(_videoCodecCtx, &width, &height);
-    return height ? height : 0;
-}
-
-- (CGFloat) sampleRate
-{
-    return _audioCodecCtx ? _audioCodecCtx->sample_rate : 0;
-}
-
-- (NSUInteger) audioStreamsCount
-{
-    return [_audioStreams count];
-}
-
-- (NSUInteger) subtitleStreamsCount
-{
-    return [_subtitleStreams count];
-}
-
-- (NSInteger) selectedAudioStream
-{
-    if (_audioStream == -1)
-        return -1;
-    NSNumber *n = [NSNumber numberWithInteger:_audioStream];
-    return [_audioStreams indexOfObject:n];        
-}
-
-- (void) setSelectedAudioStream:(NSInteger)selectedAudioStream
-{
-    NSInteger audioStream = [_audioStreams[selectedAudioStream] integerValue];
-    [self closeAudioStream];
-    cyPlayerError errCode = [self openAudioStream: audioStream];
-    if (cyPlayerErrorNone != errCode) {
-        LoggerAudio(0, @"%@", errorMessage(errCode));
-    }
-}
-
-- (NSInteger) selectedSubtitleStream
-{
-    if (_subtitleStream == -1)
-        return -1;
-    return [_subtitleStreams indexOfObject:@(_subtitleStream)];
-}
-
-- (void) setSelectedSubtitleStream:(NSInteger)selected
-{
-    [self closeSubtitleStream];
-    
-    if (selected == -1) {
-        
-        _subtitleStream = -1;
-        
-    } else {
-        
-        NSInteger subtitleStream = [_subtitleStreams[selected] integerValue];
-        cyPlayerError errCode = [self openSubtitleStream:subtitleStream];
-        if (cyPlayerErrorNone != errCode) {
-            LoggerStream(0, @"%@", errorMessage(errCode));
-        }
-    }
-}
-
-- (BOOL) validAudio
-{
-    return (_audioStream != -1) && (self.decodeType & CYVideoDecodeTypeAudio);
-}
-
-- (BOOL) validVideo
-{
-    return (_videoStream != -1) && (self.decodeType & CYVideoDecodeTypeVideo);
-}
-
-- (BOOL) validSubtitles
-{
-    return _subtitleStream != -1;
-}
 
 - (NSDictionary *) info
 {
@@ -1017,6 +886,7 @@ static int interrupt_callback(void *ctx);
         _swsContextLock = dispatch_semaphore_create(1);//初始化锁
         _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_CONCURRENT);
         _concurrentGroup = dispatch_group_create();
+        __Setter_Getter_ConcurrentQueue = dispatch_queue_create("Con-Current Setter/Getter Queue", DISPATCH_QUEUE_CONCURRENT);
         _rate = 1.0;
     }
     return self;
@@ -1038,6 +908,161 @@ static int interrupt_callback(void *ctx);
     [self closeFile];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
+
+#pragma mark - Getter/Setter
+
+- (CGFloat) duration
+{
+    if (!_formatCtx)
+        return 0;
+    if (_formatCtx->duration == AV_NOPTS_VALUE)
+        return MAXFLOAT;
+    return (CGFloat)_formatCtx->duration / AV_TIME_BASE;
+}
+
+- (CGFloat) position
+{
+    return _position;
+}
+
+- (void) setPosition: (CGFloat)seconds
+{
+    _position = seconds;
+    _isEOF = NO;
+    dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+    if ([self validVideo]) {
+        int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
+//        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
+        avcodec_flush_buffers(_videoCodecCtx);
+        
+    }
+    
+    if ([self validAudio]) {
+        int64_t ts = (int64_t)(seconds / (_audioTimeBase));
+//        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
+        avcodec_flush_buffers(_audioCodecCtx);
+    }
+    
+    dispatch_semaphore_signal(_avReadFrameLock);//放行
+    dispatch_semaphore_signal(_avSendAndReceivePacketLock);
+}
+
+- (NSUInteger) frameWidth
+{
+    if (_dstWidth > 0) {
+        return _dstWidth;
+    }
+    NSUInteger width = _videoCodecCtx->width;
+    NSUInteger height = _videoCodecCtx->height;
+    get_video_scale_max_size(_videoCodecCtx, &width, &height);
+    return width ? width : 0;
+}
+
+- (NSUInteger) frameHeight
+{
+    if (_dstHeight > 0)
+    {
+        return _dstHeight;
+    }
+    NSUInteger width = _videoCodecCtx->width;
+    NSUInteger height = _videoCodecCtx->height;
+    get_video_scale_max_size(_videoCodecCtx, &width, &height);
+    return height ? height : 0;
+}
+
+- (CGFloat) sampleRate
+{
+    return _audioCodecCtx ? _audioCodecCtx->sample_rate : 0;
+}
+
+- (NSUInteger) audioStreamsCount
+{
+    return [_audioStreams count];
+}
+
+- (NSUInteger) subtitleStreamsCount
+{
+    return [_subtitleStreams count];
+}
+
+- (NSInteger) selectedAudioStream
+{
+    if (_audioStream == -1)
+        return -1;
+    NSNumber *n = [NSNumber numberWithInteger:_audioStream];
+    return [_audioStreams indexOfObject:n];
+}
+
+- (void) setSelectedAudioStream:(NSInteger)selectedAudioStream
+{
+    NSInteger audioStream = [_audioStreams[selectedAudioStream] integerValue];
+    [self closeAudioStream];
+    cyPlayerError errCode = [self openAudioStream: audioStream];
+    if (cyPlayerErrorNone != errCode) {
+        LoggerAudio(0, @"%@", errorMessage(errCode));
+    }
+}
+
+- (NSInteger) selectedSubtitleStream
+{
+    if (_subtitleStream == -1)
+        return -1;
+    return [_subtitleStreams indexOfObject:@(_subtitleStream)];
+}
+
+- (void) setSelectedSubtitleStream:(NSInteger)selected
+{
+    [self closeSubtitleStream];
+    
+    if (selected == -1) {
+        
+        _subtitleStream = -1;
+        
+    } else {
+        
+        NSInteger subtitleStream = [_subtitleStreams[selected] integerValue];
+        cyPlayerError errCode = [self openSubtitleStream:subtitleStream];
+        if (cyPlayerErrorNone != errCode) {
+            LoggerStream(0, @"%@", errorMessage(errCode));
+        }
+    }
+}
+
+- (BOOL) validAudio
+{
+    return (_audioStream != -1) && (self.decodeType & CYVideoDecodeTypeAudio);
+}
+
+- (BOOL) validVideo
+{
+    return (_videoStream != -1) && (self.decodeType & CYVideoDecodeTypeVideo);
+}
+
+- (BOOL) validSubtitles
+{
+    return _subtitleStream != -1;
+}
+
+- (CYPlayerDecoderDynamicFPS)dynamicFPS_Block
+{
+    __block CYPlayerDecoderDynamicFPS tempBlock;
+    dispatch_sync(__Setter_Getter_ConcurrentQueue, ^{
+        tempBlock = _dynamicFPS_Block;
+    });
+    return tempBlock;
+}
+
+- (void)setDynamicFPS_Block:(CYPlayerDecoderDynamicFPS)dynamicFPS_Block
+{
+    dispatch_barrier_async(__Setter_Getter_ConcurrentQueue, ^{
+        _dynamicFPS_Block = dynamicFPS_Block;
+    });
+}
+
+
 
 #pragma mark - private
 
@@ -2002,12 +2027,12 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     
     CGFloat position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
     CGFloat duration = 0.0;
-    
+    __weak typeof(&*self)weakSelf = self;
     if ([self discardVideoFrameWithPosition:position OriginFPS:_fps TargetFPS_Block:^CGFloat{
-        if (self.dynamicFPS_Block) {
-            return self.dynamicFPS_Block();
+        if (weakSelf.dynamicFPS_Block) {
+            return weakSelf.dynamicFPS_Block();
         }else {
-            return CYPlayerDecoderMaxFPS * self.rate;
+            return CYPlayerDecoderMaxFPS * weakSelf.rate;
         }
     }]) {
         return nil;

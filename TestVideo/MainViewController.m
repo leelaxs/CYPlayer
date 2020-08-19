@@ -52,7 +52,7 @@
                           @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/5/23/8/88/304368212387233792_merge.m4a",
                         
                           localV,
-                          @"rtmp://play2.yayi360.com/dentalink-vod/515197938314592256?auth_key=1597657793-0-0-8d6090761f1ea22e61689f5ba43fa2e9"
+                          @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8"
                           ];
         
     }

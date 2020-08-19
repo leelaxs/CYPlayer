@@ -96,7 +96,7 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MAX_BUFFERED_DURATION   4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 8.0
-#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 90//100 相当于关闭
 #define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 0//0相当于关闭
 
 @interface CYFFmpegPlayer ()<
@@ -1767,8 +1767,9 @@ CYAudioManagerDelegate>
 
 - (void) videoTick
 {
+    __weak typeof(&*self)weakSelf = self;
     CFAbsoluteTime tickStartTime = CFAbsoluteTimeGetCurrent();
-#ifdef DEBUG
+//#ifdef DEBUG
     if (!_videoTickStartTime) {
         _videoTickStartTime = CFAbsoluteTimeGetCurrent();
     }
@@ -1776,12 +1777,20 @@ CYAudioManagerDelegate>
         CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _videoTickStartTime);
 //         NSLog(@"Linked presentVideoFrame in %f ms", linkTime *1000.0);
         _decoder.dynamicFPS_Block = ^CGFloat{
-            return 1 / (CGFloat)linkTime;
+            if ([weakSelf getTotalMemorySize] >= 2000) {
+                return 1 / (CGFloat)linkTime;
+            }else {
+                if (weakSelf.decoder.frameHeight * weakSelf.decoder.frameWidth >= 1440 * 810) {
+                    return 20;
+                }else {
+                    return 1 / (CGFloat)linkTime;
+                }
+            }
         };
         _videoTickStartTime = CFAbsoluteTimeGetCurrent();
     }
-#endif
-    __weak typeof(&*self)weakSelf = self;
+//#endif
+    
     CGFloat interval = 0;
     if (!_buffered)
     {
@@ -1831,6 +1840,10 @@ CYAudioManagerDelegate>
             if (_videoBufferedDuration >= _maxBufferedDuration * 2) {
                 [self freeHalfBufferedFrames];
             }
+        }
+        else
+        {
+            NSLog(@"内存告警: 剩余内存 %.2fMB, 已用内存 %.2f%%", [self getAvailableMemorySize], [self getMemoryUsedPercent]);
         }
         
 //        const NSTimeInterval correction = [self tickCorrection];
