@@ -96,7 +96,7 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MAX_BUFFERED_DURATION   4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 8.0
-#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 90//100 相当于关闭
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
 #define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 0//0相当于关闭
 
 @interface CYFFmpegPlayer ()<
@@ -1811,9 +1811,9 @@ CYAudioManagerDelegate>
         
         NSUInteger leftVFrames = (_decoder.validVideo ? _videoFrames.count : 0);
         
-        NSUInteger leftFrames = leftAFrames + leftVFrames;
+//        NSUInteger leftFrames = leftAFrames + leftVFrames;
 
-        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
+//        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
             BOOL need_decode = NO;
             if (!need_decode && _decoder.validVideo && (leftVFrames <= 0 || leftAFrames <= 0)) {
@@ -1841,10 +1841,10 @@ CYAudioManagerDelegate>
                 [self freeHalfBufferedFrames];
             }
         }
-        else
-        {
-            NSLog(@"内存告警: 剩余内存 %.2fMB, 已用内存 %.2f%%", [self getAvailableMemorySize], [self getMemoryUsedPercent]);
-        }
+//        else
+//        {
+//            NSLog(@"内存告警: 剩余内存 %.2fMB, 已用内存 %.2f%%", [self getAvailableMemorySize], [self getMemoryUsedPercent]);
+//        }
         
 //        const NSTimeInterval correction = [self tickCorrection];
 //        NSTimeInterval time = MAX(interval + correction, 0.01);
