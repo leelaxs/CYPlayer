@@ -13,13 +13,13 @@
 
 @implementation CYTest
 
-- (void)test
++ (void)test
 {
 //    smbc_init_context(NULL);
 //    smbc_get_auth_data_fn fn;
 //    int debug;
 //    smbc_init(fn, debug);
-    
+//    
 //    x264_encoder_encode(NULL, NULL, NULL, NULL, NULL);
     
     avcodec_open2(NULL, NULL, NULL);

@@ -978,7 +978,7 @@ CYAudioManagerDelegate>
         __strong __typeof(&*self)strongSelf = weakSelf;
         
         NSError *error = nil;
-        [decoder openFile:_decoder.path error:&error];
+        [decoder openFile:weakSelf.decoder.path error:&error];
         
         if (strongSelf) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -1058,7 +1058,8 @@ CYAudioManagerDelegate>
                 NSError * error = nil;
                 int i = 0;
                 __strong CYFFmpegPlayer *strongSelf = weakSelf;
-                while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted)
+                while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted &&
+                       !strongSelf->_interrupted)
                     //                for (int i = 0; i < imagesCount; i++)
                 {
                     __strong CYPlayerDecoder *decoder = weakDecoder;
@@ -1176,7 +1177,11 @@ CYAudioManagerDelegate>
         LoggerStream(2, @"buffered limit: %.1f - %.1f", _minBufferedDuration, _maxBufferedDuration);
         
         [self setupPresentView];
-        [self _itemReadyToPlay];
+        __weak typeof(self) _self = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+              [_self _itemReadyToPlay];
+        });
+        
     } else {
         if (!_interrupted) {
             [self handleDecoderMovieError: error];
