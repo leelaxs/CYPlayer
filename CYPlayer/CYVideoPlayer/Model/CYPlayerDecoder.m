@@ -1150,11 +1150,17 @@ static int interrupt_callback(void *ctx);
             return cyPlayerErrorOpenFile;
     }
     
-    av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
-    av_dict_set(&_options, "re", "25", 0);
-    av_dict_set(&_options, "r", "25", 0);
-    av_dict_set(&_options, "qp", "0", 0);
+//    av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
+//    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
+//    av_dict_set(&_options, "re", "25", 0);
+//    av_dict_set(&_options, "r", "25", 0);
+//    av_dict_set(&_options, "qp", "0", 0);
+//    av_dict_set(&_options, "video_size","3264x2448",0);
+//    av_dict_set(&_options,"pixel_format","yuv420p",0);
+//    av_dict_set(&_options, "f", "h264", 0);
+//    av_dict_set(&_options, "codec:v", "h264", 0);
+//    av_dict_set(&_options, "codec:a", "aac", 0);
+//    av_dict_set(&_options, "probesize", "32M", 0);
 //    av_dict_set_int(&_options, "video_track_timescale", 25, 0);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
@@ -1163,6 +1169,10 @@ static int interrupt_callback(void *ctx);
         // There is total different meaning for 'timeout' option in rtmp
         av_dict_set(&_options, "timeout", NULL, 0);
     }
+    //avformat_open_input-->init_input
+    //init_input-->(io_open:io_open_default)
+    //io_open_default-->ffio_open_whitelist-->ffurl_open_whitelist
+    //ffurl_open_whitelist--(URLContext)-->ffio_fdopen
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         
         if (formatCtx)
