@@ -1150,8 +1150,8 @@ static int interrupt_callback(void *ctx);
             return cyPlayerErrorOpenFile;
     }
     
-//    av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-//    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
+    av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
+    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
 //    av_dict_set(&_options, "re", "25", 0);
 //    av_dict_set(&_options, "r", "25", 0);
 //    av_dict_set(&_options, "qp", "0", 0);
