@@ -20,24 +20,24 @@ static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
                                                   char *username, int unlen,
                                                   char *password, int pwlen)
 {
-    
-    if (username) {
-           {
-               strncpy(username, "guest", unlen - 1);
-           }
-       }
-    
-       if (password) {
-           {
-               password[0] = 0;
-           }
-       }
-    
-       if (workgroup) {
-           {
-               workgroup[0] = 0;
-           }
-       }
+    void * data = smbc_getOptionUserData(c);
+////    if (username) {
+////           {
+////               strncpy(username, "guest", unlen - 1);
+////           }
+////       }
+//
+//       if (password) {
+//           {
+//               password[0] = 0;
+//           }
+//       }
+//
+//       if (workgroup) {
+//           {
+//               workgroup[0] = 0;
+//           }
+//       }
 }
 
 
@@ -55,6 +55,8 @@ static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
     }
     smbc_set_context(ctx);
     
+    smbc_setOptionUserData(ctx, @"work");
+    smbc_setTimeout(ctx,3000);
     smbc_setFunctionAuthDataWithContext(ctx, my_smbc_get_auth_data_with_context_fn);
     //    smbc_setOptionUserData(ctx, h);
     //    smbc_setFunctionAuthDataWithContext(libsmbc->ctx, libsmbc_get_auth_data);
@@ -69,8 +71,14 @@ static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
     //    smbc_init(fn, debug);
     
     
-    if ((smbc_open("smb://guest@172.16.9.10/video/test.mp4", O_RDONLY | O_WRONLY, 0666)) < 0) {
+    //当制定了密码,不会走
+    // | O_WRONLY 注意权限问题my_smbc_get_auth_data_with_context_fn
+    if ((smbc_open("smb://workgroup;mobile:123123@172.16.9.10/video/test.mp4", O_RDONLY, 0666)) < 0) {
         NSLog(@"File open failed");
+    }
+    else
+    {
+        NSLog(@"File open successed");
     }
     //
     //    x264_encoder_encode(NULL, NULL, NULL, NULL, NULL);
