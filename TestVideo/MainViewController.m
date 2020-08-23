@@ -54,7 +54,7 @@
                           localV,
                           @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
                           @"smb://guest@172.16.9.10/video/test.mp4",
-                          @"smb://192.168.31.1/1.42.6-24922/Downloads.mp4"
+                          @"smb://WORKGROUP;yellowei:1314-Wamq@192.168.31.170/Movie/Marval Movie/04 Thor 2011 BluRay 720p DTS x264-MgB [ETRG].mkv"
                           ];
         
     }

@@ -848,7 +848,10 @@ CYAudioManagerDelegate>
 
 -(void) _play
 {
-    [self _stopLoading];
+    if (!_buffered)
+    {
+        [self _stopLoading];
+    }
     
     if (self.playing)
         return;
@@ -2544,8 +2547,9 @@ CYAudioManagerDelegate>
     {
         return;
     }
+    
+    _buffered = YES;//这个需要写在_positionUpdating的前面，不然_positionUpdating刚设置为yes接着会被videotick重置为NO
     _positionUpdating = YES;
-    _buffered = YES;
 //    [self pause];
     __weak CYFFmpegPlayer *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -2599,6 +2603,9 @@ CYAudioManagerDelegate>
                     [strongSelf setMoviePositionFromDecoder];
                     [strongSelf presentVideoFrame];
                     strongSelf->_isDraging = NO;
+                    strongSelf->_buffered = NO;
+                    strongSelf->_positionUpdating = NO;
+                    [weakSelf _stopLoading];
                 }
             });
         });
@@ -3312,7 +3319,7 @@ vm_size_t memory_usage(void) {
             if (!_positionUpdating) { _positionUpdating = YES; }
             
             NSInteger currentTime = slider.value * _decoder.duration;
-            [self setMoviePosition:currentTime playMode:YES];
+            [self setMoviePosition:currentTime playMode:self.playing];
             [self _delayHiddenControl];
             _cyAnima(^{
                 _cyHiddenViews(@[self.controlView.draggingProgressView]);

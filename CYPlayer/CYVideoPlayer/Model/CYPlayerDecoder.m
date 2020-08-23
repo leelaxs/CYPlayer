@@ -910,6 +910,10 @@ static int interrupt_callback(void *ctx);
 }
 
 #pragma mark - Getter/Setter
+- (void)setTargetPosition:(CGFloat)targetPosition
+{
+    _targetPosition = targetPosition;
+}
 
 - (CGFloat) duration
 {
@@ -932,19 +936,34 @@ static int interrupt_callback(void *ctx);
     dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
     dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
     if ([self validVideo]) {
-        int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
+//        int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
-        avcodec_flush_buffers(_videoCodecCtx);
         
-    }
-    
-    if ([self validAudio]) {
-        int64_t ts = (int64_t)(seconds / (_audioTimeBase));
-//        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
+        /*
+         timebase指的是时间戳，对应pts时间戳，如果index是-1，则使用AV_TIMEBASE作为timebase并由ffmpeg自动转换成默认时间戳， 如果指定了stream那么就要使用相应的stream的timebase来计算pts了。这里注意的是比如seek到32s不能简单的直接32*AV_TIMEBASE来计算时间戳，因为pts不一定是从0开始的，所以要加上起始的pts
+         */
+//        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(_formatCtx, -1, (seconds)*AV_TIME_BASE + (double)_formatCtx->start_time, AVSEEK_FLAG_BACKWARD);//不指定stream进行seek
+        avcodec_flush_buffers(_videoCodecCtx);
+        if ([self validAudio]) {
+            avcodec_flush_buffers(_audioCodecCtx);
+        }
+        
+//        if ([self validAudio]) {
+//            int64_t ts = (int64_t)(seconds / (_audioTimeBase));
+//            //        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+//            av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_ANY);
+//            avcodec_flush_buffers(_audioCodecCtx);
+//        }
+    }else if ([self validAudio]) {
+//        int64_t ts = (int64_t)(seconds / (_audioTimeBase));
+        //        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+//        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(_formatCtx, -1, (seconds)*AV_TIME_BASE + (double)_formatCtx->start_time, AVSEEK_FLAG_BACKWARD);//不指定stream进行seek
         avcodec_flush_buffers(_audioCodecCtx);
     }
+    
+    
     
     dispatch_semaphore_signal(_avReadFrameLock);//放行
     dispatch_semaphore_signal(_avSendAndReceivePacketLock);
@@ -2890,7 +2909,7 @@ error:
     if (_videoStream == -1 &&
         _audioStream == -1)
         return;
-    self.targetPosition = targetPos;
+//    self.targetPosition = targetPos;
     __weak typeof(&*self)weakSelf = self;
     __block NSInteger compeletedConter = 0;
     NSInteger threadCount = 2; //CYPlayerDecoderConCurrentThreadCount
