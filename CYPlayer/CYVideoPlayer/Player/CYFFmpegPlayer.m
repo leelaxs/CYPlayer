@@ -1289,7 +1289,7 @@ CYAudioManagerDelegate>
         else
         {
             
-            _imageView.image = [UIImage imageNamed:@"cyplayer.bundle/music_icon.png"];
+            _imageView.image = [CYVideoPlayerResources imageNamed:@"music_icon.png"];
             _imageView.contentMode = UIViewContentModeCenter;
         }
         

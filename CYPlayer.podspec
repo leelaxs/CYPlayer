@@ -10,7 +10,7 @@ s.license      = { :type => "MIT", :file => "LICENSE" }
 s.author             = { "yellowei" => "me@yellowei.com" }
 s.platform     = :ios, "8.0"
 s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
-s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
+s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle']
 s.frameworks  = "UIKit", "Foundation"
 s.requires_arc = true
 s.dependency 'Masonry'

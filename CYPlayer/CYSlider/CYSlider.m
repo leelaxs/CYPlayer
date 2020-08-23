@@ -284,7 +284,7 @@
             self.value = value;
             self.thumbImageView.image = self.thumbnail_sel;
             [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
-                make.width.height.equalTo(@48);
+                make.width.height.equalTo(@32);
             }];
             if ( ![self.delegate respondsToSelector:@selector(sliderWillBeginDragging:)] ) break;
             [self.delegate sliderWillBeginDragging:self];
