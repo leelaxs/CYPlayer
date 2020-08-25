@@ -216,7 +216,7 @@ static UINavigationControllerOperation _navOperation;
         !self.isObserver ) [self CY_navSettings];
     
     // push update screenshot
-//    [self CY_updateScreenshot];
+    [self CY_updateScreenshot];
     // call origin method
     [self CY_pushViewController:viewController animated:animated];
 }
