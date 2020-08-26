@@ -120,7 +120,7 @@ CYVideoPlayerMoreSettingSecondaryView;
 @property (nonatomic, assign, readwrite) BOOL generatPreviewImages;
 
 - (void)viewDidAppear;
-- (void)viewWillDisappear;
+- (void)viewDidDisappear;
 - (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
 - (void) setMoviePosition: (CGFloat) position playMode:(BOOL)playMode;
 - (double)currentTime;

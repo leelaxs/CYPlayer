@@ -801,7 +801,7 @@ CYAudioManagerDelegate>
                                                object:[UIApplication sharedApplication]];
 }
 
-- (void)viewWillDisappear
+- (void)viewDidDisappear
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -3343,6 +3343,7 @@ vm_size_t memory_usage(void) {
             }
             else {
                 if ( self.clickedBackEvent ) self.clickedBackEvent(self);
+                else [self showTitle:@"clickedBackEvent nil" duration:3];
             }
         }
             break;
