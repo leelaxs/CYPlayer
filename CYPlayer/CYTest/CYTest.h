@@ -10,6 +10,7 @@
 
 @interface CYTest : NSObject
 
-+ (void)test;
++ (void)testSMB;
++ (void)testGeneratedPreviewImagesWithImagesCount;
 
 @end

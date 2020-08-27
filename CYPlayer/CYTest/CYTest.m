@@ -8,6 +8,7 @@
 
 #import "CYTest.h"
 #import <CYFFmpeg/CYFFmpeg.h>
+#import "CYPlayer.h"
 //#import "x264.h"
 
 
@@ -42,7 +43,7 @@ static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
 
 
 
-+ (void)test
++ (void)testSMB
 {
     SMBCCTX * ctx = smbc_new_context();
     if (!ctx) {
@@ -84,6 +85,14 @@ static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
     //    x264_encoder_encode(NULL, NULL, NULL, NULL, NULL);
     
     //    avcodec_open2(NULL, NULL, NULL);
+}
+
++ (void)testGeneratedPreviewImagesWithImagesCount
+{
+    [CYPlayerDecoder generatedPreviewImagesWithPath:@"smb://mobile:123123@172.16.9.10/video/test.mp4" time:20 completionHandler:^(NSMutableArray *frames, NSError *error) {
+        
+    }];
+    
 }
 
 @end

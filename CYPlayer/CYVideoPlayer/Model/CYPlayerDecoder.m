@@ -1507,11 +1507,10 @@ static int interrupt_callback(void *ctx);
     
     if (_formatCtx) {
         
-        _formatCtx->interrupt_callback.opaque = NULL;
-        _formatCtx->interrupt_callback.callback = NULL;
+//        _formatCtx->interrupt_callback.opaque = NULL;
+//        _formatCtx->interrupt_callback.callback = NULL;
         
         avformat_close_input(&_formatCtx);
-        _formatCtx = NULL;
     }
     
     if (_options)
@@ -3411,23 +3410,18 @@ error:
     return result_frame;
 }
 
-- (void)generatedPreviewImagesWithImagesCount:(NSInteger)count
-                            completionHandler:(void (^)(NSMutableArray * frames, NSError * error))handler
++ (void)generatedPreviewImagesWithPath:(NSString *)path
+                                  time:(NSTimeInterval)time
+                     completionHandler:(void (^)(NSMutableArray * frames, NSError * error))handler
 {
     @synchronized (self)
     {
-        NSInteger duration = self.duration;
-        if (self.path.length <=0 || duration <= 0 || count <= 0 || duration == NSNotFound || count == NSNotFound)
-        {
-            handler(nil, [NSError errorWithDomain:cyplayerErrorDomain code:-1 userInfo:nil]);
-            return;
-        }
-        
+    
+        __weak typeof(self)weakSelf = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            double countPerSec = ((double)count) / ((double)duration);
-            NSString * countPerSecStr = [NSString stringWithFormat:@"%f", countPerSec];
-            char * timeInterval = (char *)[countPerSecStr UTF8String];
-            char *movie = (char *)[self.path UTF8String];
+            NSString * intervalStr = [NSString stringWithFormat:@"%f", time];
+            char * timeInterval = (char *)[intervalStr UTF8String];
+            char *movie = (char *)[path UTF8String];
             NSString * documentPath = CY_DocumentPath(@"");
             NSString * cyTmpPath = [documentPath stringByAppendingPathComponent:@"CYPlayerTmp"];
             NSFileManager * fileManager = [NSFileManager defaultManager];
@@ -3439,39 +3433,37 @@ error:
             }
             NSString * outPath = [cyTmpPath stringByAppendingPathComponent:@"%05d.jpg"];
             char *outPic = (char *)[outPath UTF8String];
-            char *durationChar = (char *)[[NSString stringWithFormat:@"%ld", (long)duration] UTF8String];
-            //ffmpeg -ss 00:00 -i xxx.mp4 -f image2 -r 0.2 -t 02:45 %3d.jpg
+            //ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
             char* a[] = {
                 "ffmpeg",
                 "-ss",
-                "0",
+                timeInterval,
                 "-i",
                 movie,
                 "-f",
                 "image2",
                 "-r",
-                timeInterval,
-                "-t",
-                durationChar,
+                "1",
+                "-vframes",
+                "1",
                 outPic
             };
             
             int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
             NSError * error = nil;
-            NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:count];
+            NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:1];
             if (result != 0) {
                 error = [NSError errorWithDomain:cyplayerErrorDomain code:result userInfo:nil];
             }else{
-                for (int i = 1; i <= count; i++)
-                {
-                    NSString * imagePath = [cyTmpPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%05d.jpg", i]];
-                    UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
-//                    CYFFmpegPreviewModel * model = [CYFFmpegPreviewModel previewModelWithImage:image position:duration / count * (i-1)];
-//                    [models addObject:model];
-                }
+                NSString * imagePath = [cyTmpPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%05d.jpg", 1]];
+                UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
+                //                    CYFFmpegPreviewModel * model = [CYFFmpegPreviewModel previewModelWithImage:image position:duration / count * (i-1)];
+                [models addObject:image];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                handler(models, error);
+                if (handler) {
+                    handler(models, error);
+                }
             });
         });
     }

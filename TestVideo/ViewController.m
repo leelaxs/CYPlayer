@@ -84,7 +84,7 @@
 //        PlayerViewController * pvc = [[PlayerViewController alloc] init];
 //        pvc.assetURL = [NSURL URLWithString:@"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4"];
 //        [self.navigationController pushViewController:pvc animated:YES];
-        [CYTest test];
+        [CYTest testSMB];
     }
     else if (sender.tag == 200) {
 //        PlayerViewController * pvc = [[PlayerViewController alloc] init];
@@ -106,6 +106,7 @@
 ////        UIViewController *vc = [[CYFFmpegViewController alloc] init];
 ////        
 //        [self.navigationController pushViewController:vc animated:YES];
+        [CYTest testGeneratedPreviewImagesWithImagesCount];
     }
 }
 
