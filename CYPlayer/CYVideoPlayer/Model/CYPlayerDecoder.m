@@ -24,8 +24,10 @@
 #import "CYGCDManager.h"
 
 #define CY_DocumentDir [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
+#define CY_CachesDir [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject]
 #define CY_BundlePath(res) [[NSBundle mainBundle] pathForResource:res ofType:nil]
 #define CY_DocumentPath(res) [CY_DocumentDir stringByAppendingPathComponent:res]
+#define CY_CachesPath(res) [CY_CachesDir stringByAppendingPathComponent:res]
 
 //#define USE_OPENAL @"UseCYPCMAudioManager"
 
@@ -3454,66 +3456,94 @@ error:
     return result_frame;
 }
 
++ (NSString *)getImageCachePath
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *filePath = CY_CachesPath(@"ffmpeg_cache");
+    
+    BOOL isDir = FALSE;
+    BOOL isDirExist = [fileManager fileExistsAtPath:filePath isDirectory:&isDir];
+    if(!(isDirExist && isDir)){
+        BOOL bCreateDir = [fileManager createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+        if(!bCreateDir){
+            NSLog(@"Create ffmpeg_cache Directory Failed.");
+            return nil;
+        }else {
+            return filePath;
+        }
+    }else{
+        return filePath;
+    }
+}
+
++ (NSString *)getImagePathWithPath:(NSString *)path
+{
+    NSString * imagePath = [[NSUserDefaults standardUserDefaults] objectForKey:path];
+    if (!imagePath || imagePath.length <= 0) {
+        return nil;
+    }
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:imagePath]) {
+        return nil;
+    }
+    return imagePath;
+}
+
 + (void)generatedPreviewImagesWithPath:(NSString *)path
                                   time:(NSTimeInterval)time
                      completionHandler:(void (^)(NSMutableArray * frames, NSError * error))handler
 {
     @synchronized (self)
     {
-        __weak typeof(self)weakSelf = self;
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            NSString * intervalStr = [NSString stringWithFormat:@"%f", time];
-            char * timeInterval = (char *)[intervalStr UTF8String];
-            char *movie = (char *)[path UTF8String];
-            NSString * documentPath = CY_DocumentPath(@"");
-            NSString * cyTmpPath = [documentPath stringByAppendingPathComponent:@"CYPlayerTmp"];
-            NSFileManager * fileManager = [NSFileManager defaultManager];
-            BOOL isDir = NO;
-            // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
-            BOOL existed = [fileManager fileExistsAtPath:cyTmpPath isDirectory:&isDir];
-            if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
-                [fileManager createDirectoryAtPath:cyTmpPath withIntermediateDirectories:YES attributes:nil error:nil];
-            }
-//            NSString * outPath = [cyTmpPath stringByAppendingPathComponent:@"%05d.jpg"];
-            NSString * outPath = [cyTmpPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_",[path lastPathComponent]]];
-            outPath = [outPath stringByAppendingString:@"%05d.jpg"];
-            char *outPic = (char *)[outPath UTF8String];
-            //ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
-            char* a[] = {
-                "ffmpeg",
-                "-ss",
-                timeInterval,
-                "-i",
-                movie,
-                "-f",
-                "image2",
-                "-r",
-                "1",
-                "-vframes",
-                "1",
-                outPic
-            };
-            
-            dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
-            int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
-            dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
-            
-            NSError * error = nil;
-            NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:1];
-            if (result != 0) {
-                error = [NSError errorWithDomain:cyplayerErrorDomain code:result userInfo:nil];
-            }else{
-                NSString * imagePath = [cyTmpPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%05d.jpg", 1]];
-                UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
-                //                    CYFFmpegPreviewModel * model = [CYFFmpegPreviewModel previewModelWithImage:image position:duration / count * (i-1)];
-                [models addObject:image];
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (handler) {
-                    handler(models, error);
+        NSString * imagePath = [self getImagePathWithPath:path];
+        if (imagePath.length > 0){
+            handler([@[imagePath] mutableCopy], nil);
+        } else {
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                NSString * intervalStr = [NSString stringWithFormat:@"%f", time];
+                char * timeInterval = (char *)[intervalStr UTF8String];
+                char *movie = (char *)[path UTF8String];
+                NSString * cyTmpPath = [self getImageCachePath];
+                NSString * outPath = [cyTmpPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_",[path lastPathComponent]]];
+                outPath = [outPath stringByAppendingFormat:@"%f.jpg",time];
+                char *outPic = (char *)[outPath UTF8String];
+                //ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
+                char* a[] = {
+                    "ffmpeg",
+                    "-ss",
+                    timeInterval,
+                    "-i",
+                    movie,
+                    "-f",
+                    "image2",
+                    "-r",
+                    "1",
+                    "-vframes",
+                    "1",
+                    outPic
+                };
+                
+                dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
+                int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
+                dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
+                
+                NSError * error = nil;
+                NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:1];
+                if (result != 0) {
+                    error = [NSError errorWithDomain:cyplayerErrorDomain code:result userInfo:nil];
+                }else{
+                    [models addObject:outPath];
+                    [[NSUserDefaults standardUserDefaults] setObject:outPath forKey:path];
+                    [[NSUserDefaults standardUserDefaults] synchronize];
                 }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (handler) {
+                        handler(models, error);
+                    }
+                });
             });
-        });
+        }
     }
     
 }
