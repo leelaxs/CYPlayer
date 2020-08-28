@@ -1253,7 +1253,7 @@ CYAudioManagerDelegate>
         
         if (_decoder.validVideo) {
             __weak typeof(self) _self = self;
-            if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"] || [self.decoder.path hasPrefix:@"smb"]) {
+            if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"] || [self.decoder.path hasPrefix:@"XXX-smb"]) {
                 return;
             }
             //先隐藏previewbtn

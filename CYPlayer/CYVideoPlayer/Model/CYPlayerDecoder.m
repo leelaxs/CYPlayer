@@ -21,6 +21,7 @@
 #import "CYHardwareDecompressVideo.h"
 #import "CYSonicManager.h"
 #import <malloc/malloc.h>
+#import "CYGCDManager.h"
 
 #define CY_DocumentDir [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
 #define CY_BundlePath(res) [[NSBundle mainBundle] pathForResource:res ofType:nil]
@@ -354,8 +355,11 @@ static BOOL isNetworkPath (NSString *path)
 }
 
 static int interrupt_callback(void *ctx);
+static int my_libsmbc_open( URLContext *h, const char *url, int flags);
+static int my_libsmbc_close( URLContext *h );
+static int my_libsmbc_connect(URLContext *h);
 
-# pragma mark - ////////////////////////////////////////////////////////////////////////////////
+# pragma mark - ///////////////////////////
 
 @interface CYPlayerFrame()
 @property (readwrite, nonatomic) CGFloat position;
@@ -626,7 +630,25 @@ static int interrupt_callback(void *ctx);
 }
 @end
 
-////////////////////////////////////////////////////////////////////////////////
+//MARK: - //////////////Decoder///////////////
+
+typedef struct AVIOInternal {
+    URLContext *h;
+} AVIOInternal;
+
+typedef struct {
+    const AVClass *class;
+    SMBCCTX *ctx;
+    int dh;
+    int fd;
+    int64_t filesize;
+    int trunc;
+    int timeout;
+    char *workgroup;
+} LIBSMBContext;
+
+extern  URLProtocol ff_libsmbclient_protocol;
+
 
 @interface CYPlayerDecoder () {
     
@@ -658,11 +680,7 @@ static int interrupt_callback(void *ctx);
     AVFrame             *_audioFrame2;
     AVFrame             *_audioFrame3;
     AVFrame             *_audioFrame4;
-    //高可用接口
-    dispatch_semaphore_t _avReadFrameLock;
-    dispatch_semaphore_t _avSendAndReceivePacketLock;
-    dispatch_queue_t    _concurrentDecodeQueue;
-    dispatch_group_t    _concurrentGroup;
+    
     
     //滤镜相关
     AVFilterContext     *_buffersrc_ctx;
@@ -674,7 +692,6 @@ static int interrupt_callback(void *ctx);
 	
     
     struct SwsContext   *_swsContext;
-    dispatch_semaphore_t _swsContextLock;
     CGFloat             _videoTimeBase;
     CGFloat             _audioTimeBase;
     CGFloat             _position;
@@ -682,7 +699,7 @@ static int interrupt_callback(void *ctx);
     NSArray             *_audioStreams;
     NSArray             *_subtitleStreams;
     SwrContext          *_swrContext;
-    dispatch_semaphore_t _swrContextLock;
+    
     unsigned char       *_swrBuffer;
     NSUInteger          _swrBufferSize;
     NSDictionary        *_info;
@@ -694,7 +711,7 @@ static int interrupt_callback(void *ctx);
     int                 _dstWidth;
     int                 _dstHeight;
     CYPlayerDecoderDynamicFPS _dynamicFPS_Block;//动态帧率控制
-    dispatch_queue_t __Setter_Getter_ConcurrentQueue;
+    
     
     CVPixelBufferPoolRef _pixelBufferPool;//转CVPixelBuffer时用到的复用池
 }
@@ -869,6 +886,10 @@ static int interrupt_callback(void *ctx);
 + (void)initialize
 {
 //    av_log_set_callback(FFLog);
+    //替换ffmpeg的samba protocol的方法
+    ff_libsmbclient_protocol.url_open = my_libsmbc_open;
+    ff_libsmbclient_protocol.url_close = my_libsmbc_close;
+    
     avcodec_register_all();
     av_register_all();
     avformat_network_init();
@@ -880,13 +901,6 @@ static int interrupt_callback(void *ctx);
     if (self = [super init])
     {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)   name:AVAudioSessionRouteChangeNotification object:nil];
-        _avReadFrameLock = dispatch_semaphore_create(1);//初始化锁
-        _avSendAndReceivePacketLock = dispatch_semaphore_create(1);//初始化锁
-        _swrContextLock = dispatch_semaphore_create(1);//初始化锁
-        _swsContextLock = dispatch_semaphore_create(1);//初始化锁
-        _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_CONCURRENT);
-        _concurrentGroup = dispatch_group_create();
-        __Setter_Getter_ConcurrentQueue = dispatch_queue_create("Con-Current Setter/Getter Queue", DISPATCH_QUEUE_CONCURRENT);
         _rate = 1.0;
     }
     return self;
@@ -933,8 +947,8 @@ static int interrupt_callback(void *ctx);
 {
     _position = seconds;
     _isEOF = NO;
-    dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
-    dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_send_receive_packet_lock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
     if ([self validVideo]) {
 //        int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
@@ -965,8 +979,8 @@ static int interrupt_callback(void *ctx);
     
     
     
-    dispatch_semaphore_signal(_avReadFrameLock);//放行
-    dispatch_semaphore_signal(_avSendAndReceivePacketLock);
+    dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
+    dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
 }
 
 - (NSUInteger) frameWidth
@@ -1068,7 +1082,7 @@ static int interrupt_callback(void *ctx);
 - (CYPlayerDecoderDynamicFPS)dynamicFPS_Block
 {
     __block CYPlayerDecoderDynamicFPS tempBlock;
-    dispatch_sync(__Setter_Getter_ConcurrentQueue, ^{
+    dispatch_sync([CYGCDManager sharedManager].setter_getter_concurrent_queue, ^{
         tempBlock = _dynamicFPS_Block;
     });
     return tempBlock;
@@ -1076,8 +1090,12 @@ static int interrupt_callback(void *ctx);
 
 - (void)setDynamicFPS_Block:(CYPlayerDecoderDynamicFPS)dynamicFPS_Block
 {
-    dispatch_barrier_async(__Setter_Getter_ConcurrentQueue, ^{
-        _dynamicFPS_Block = dynamicFPS_Block;
+    __weak typeof(self)weakSelf = self;
+    dispatch_barrier_async([CYGCDManager sharedManager].setter_getter_concurrent_queue, ^{
+        __strong typeof(&*weakSelf)strongSelf = weakSelf;
+        if (strongSelf) {
+            strongSelf->_dynamicFPS_Block = dynamicFPS_Block;
+        }
     });
 }
 
@@ -1169,6 +1187,8 @@ static int interrupt_callback(void *ctx);
             return cyPlayerErrorOpenFile;
     }
     
+    
+    
     av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
     av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
 //    av_dict_set(&_options, "re", "25", 0);
@@ -1184,24 +1204,46 @@ static int interrupt_callback(void *ctx);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
+    int ret;
+    if (( ret = formatCtx->io_open(formatCtx, &formatCtx->pb, [path UTF8String], AVIO_FLAG_READ | formatCtx->avio_flags, &_options)) < 0){
+        return cyPlayerErrorOpenFile;
+    }
+    
+    AVIOContext * pb = formatCtx->pb;
+    AVIOInternal * internal = pb->opaque;
+    URLContext * h = internal->h;
+    const URLProtocol * prot = h->prot;
+    
+    if ([[NSString stringWithUTF8String:prot->name] isEqualToString:@"smb"]) {
+//        LIBSMBContext *libsmbc = h->priv_data;
+//        h->prot->url_open = my_libsmbc_open;
+//        h->prot->url_close = my_libsmbc_close;
+    }
     if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"]) {
         // There is total different meaning for 'timeout' option in rtmp
         av_dict_set(&_options, "timeout", NULL, 0);
     }
+    
+
     //avformat_open_input-->init_input
     //init_input-->(io_open:io_open_default)
     //io_open_default-->ffio_open_whitelist-->ffurl_open_whitelist
     //ffurl_open_whitelist--(URLContext)-->ffio_fdopen
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         
         if (formatCtx)
             avformat_free_context(formatCtx);
+        dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
         return cyPlayerErrorOpenFile;
     }
+    
+    
     
     if (avformat_find_stream_info(formatCtx, NULL) < 0) {
         
         avformat_close_input(&formatCtx);
+        dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
         return cyPlayerErrorStreamInfoNotFound;
     }
 
@@ -1212,6 +1254,7 @@ static int interrupt_callback(void *ctx);
     
     
     _formatCtx = formatCtx;
+    dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
     return cyPlayerErrorNone;
 }
 
@@ -1354,7 +1397,7 @@ static int interrupt_callback(void *ctx);
          return cyPlayerErrorOpenCodec;
     
     if (!audioCodecIsSupported(codecCtx)) {
-
+        
 #ifdef USE_OPENAL
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
         [[CYPCMAudioManager audioManager] setPlayRate: 1 / _rate];
@@ -1370,9 +1413,9 @@ static int interrupt_callback(void *ctx);
             audioManager.avcodecContextSamplingRate = CYPCMAudioManagerNormalSampleRate;
         }
 
-        dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_wait[CYGCDManager sharedManager].swr_context_lock, DISPATCH_TIME_FOREVER);
         BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx, _rate) <= 0;
-        dispatch_semaphore_signal(_swrContextLock);
+        dispatch_semaphore_signal([CYGCDManager sharedManager].swr_context_lock);
         if (result)
         {
             return cyPlayerErroReSampler;
@@ -1385,9 +1428,9 @@ static int interrupt_callback(void *ctx);
             audioManager.avcodecContextSamplingRate = audioManager.samplingRate;
         }
         
-        dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_wait([CYGCDManager sharedManager].swr_context_lock, DISPATCH_TIME_FOREVER);
         BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx, _rate) <= 0;
-        dispatch_semaphore_signal(_swrContextLock);
+        dispatch_semaphore_signal([CYGCDManager sharedManager].swr_context_lock);
         if (result)
         {
             return cyPlayerErroReSampler;
@@ -1495,7 +1538,7 @@ static int interrupt_callback(void *ctx);
 
 -(void) closeFile
 {
-    dispatch_semaphore_wait(self->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
     [self closeAudioStream];
     [self closeVideoStream];
     [self closeSubtitleStream];
@@ -1520,7 +1563,7 @@ static int interrupt_callback(void *ctx);
     
     _interruptCallback = nil;
     _isEOF = NO;
-    dispatch_semaphore_signal(self->_avReadFrameLock);//放行
+    dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
 }
 
 - (void) closeFilter
@@ -1577,12 +1620,12 @@ static int interrupt_callback(void *ctx);
         _videoFrame4 = NULL;
     }
     
-    dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_send_receive_packet_lock, DISPATCH_TIME_FOREVER);//加锁
     if (_videoCodecCtx) {
         avcodec_free_context(&_videoCodecCtx);
         _videoCodecCtx = NULL;
     }
-    dispatch_semaphore_signal(_avSendAndReceivePacketLock);
+    dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
 }
 
 - (void) closeAudioStream
@@ -2156,7 +2199,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
             
             
             //在这写入要计算时间的代码
-            dispatch_semaphore_wait(_swsContextLock, DISPATCH_TIME_FOREVER);
+            dispatch_semaphore_wait([CYGCDManager sharedManager].sws_context_lock, DISPATCH_TIME_FOREVER);
             sws_scale(_swsContext,
                       (const uint8_t **)videoFrame->data,
                       videoFrame->linesize,
@@ -2164,7 +2207,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                       videoFrame->height,
                       picture->data,
                       picture->linesize);
-            dispatch_semaphore_signal(_swsContextLock);
+            dispatch_semaphore_signal([CYGCDManager sharedManager].sws_context_lock);
             
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
@@ -2255,7 +2298,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
             }
         }
         
-        dispatch_semaphore_wait(_swsContextLock, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_wait([CYGCDManager sharedManager].sws_context_lock, DISPATCH_TIME_FOREVER);
         sws_scale(_swsContext,
                   (const uint8_t **)videoFrame->data,
                   videoFrame->linesize,
@@ -2263,7 +2306,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                   _videoCodecCtx->height,
                   (*picture).data,
                   (*picture).linesize);
-        dispatch_semaphore_signal(_swsContextLock);
+        dispatch_semaphore_signal([CYGCDManager sharedManager].sws_context_lock);
         
         CYVideoFrameRGB *rgbFrame = [[CYVideoFrameRGB alloc] init];
         
@@ -2465,7 +2508,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                                                    AV_SAMPLE_FMT_S16,
                                                    1);
     
-    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait([CYGCDManager sharedManager].swr_context_lock, DISPATCH_TIME_FOREVER);
     if (_swrContext) {
  
         if (!_swrBuffer || _swrBufferSize < bufSize) {
@@ -2511,7 +2554,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         audioData = audioFrame->extended_data;
         numFrames = out_linesize;
     }
-    dispatch_semaphore_signal(_swrContextLock);
+    dispatch_semaphore_signal([CYGCDManager sharedManager].swr_context_lock);
     
 #ifdef USE_AUDIOTOOL
     const NSUInteger numElements = numFrames;
@@ -2552,7 +2595,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 - (void) asyncDecodeFrames:(CGFloat)minDuration audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid compeletionHandler:(CYPlayerCompeletionThread)compeletion
 {
     __weak typeof(&*self)weakSelf = self;
-    dispatch_group_async(_concurrentGroup, _concurrentDecodeQueue, ^{
+    dispatch_group_async([CYGCDManager sharedManager].concurrent_group, [CYGCDManager sharedManager].concurrent_decode_queue, ^{
 //
 //    })
 //    dispatch_async(_concurrentDecodeQueue, ^{
@@ -2571,14 +2614,15 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 //            NSLog(@"%f", curr_targetPos);
             CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             ///读取下一帧开始
-            dispatch_semaphore_wait(strongSelf->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+            dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
             if (av_read_frame(strongSelf->_formatCtx, packet) < 0) {
                 strongSelf->_isEOF = YES;
                 av_packet_unref(packet);
-                dispatch_semaphore_signal(strongSelf->_avReadFrameLock);//放行
+                dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
                 break;
             }
-            dispatch_semaphore_signal(strongSelf->_avReadFrameLock);//放行
+            
+            dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
             ///读取下一帧结束
             CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
             //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
@@ -2858,14 +2902,14 @@ error:
 #ifdef USE_AUDIOTOOL
     [[CYSonicManager sonicManager] setPlaySpeed:rate];
 #endif
-//    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+//    dispatch_semaphore_wait([CYGCDManager sharedManager].swr_context_lock, DISPATCH_TIME_FOREVER);
 //    BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx, rate);
 //    if (result)
 //    {
 //        _rate = 1 / rate;
 //        [[CYPCMAudioManager audioManager] setPlayRate: rate];
 //    }
-//    dispatch_semaphore_signal(_swrContextLock);
+//    dispatch_semaphore_signal([CYGCDManager sharedManager].swr_context_lock);
 }
 
 - (BOOL) setupVideoFrameFormat: (CYVideoFrameFormat) format
@@ -3004,11 +3048,11 @@ error:
 
 - (void)flush
 {
-    dispatch_semaphore_wait(self->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
     if (_formatCtx) {
         avformat_flush(_formatCtx);
     }
-    dispatch_semaphore_signal(self->_avReadFrameLock);//放行
+    dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
 }
 
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion
@@ -3040,7 +3084,7 @@ error:
 //    }];
     
     
-    dispatch_group_notify(_concurrentGroup, _concurrentDecodeQueue, ^{
+    dispatch_group_notify([CYGCDManager sharedManager].concurrent_group, [CYGCDManager sharedManager].concurrent_decode_queue, ^{
         
         compeletion(framesArrayGroup, YES);
         
@@ -3251,12 +3295,12 @@ error:
             while (pktSize > 0 && _videoCodecCtx && curr_targetPos == self.targetPosition) {
                 
                 int gotframe = 0;
-                dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+                dispatch_semaphore_wait([CYGCDManager sharedManager].av_send_receive_packet_lock, DISPATCH_TIME_FOREVER);//加锁
                 int len = avcodec_send_packet(_videoCodecCtx, packet);
                 packet->size -= len;
                 packet->data += len;
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
-                dispatch_semaphore_signal(_avSendAndReceivePacketLock);
+                dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
                 
                 if (len < 0) {
                     LoggerVideo(0, @"decode video error, skip packet");
@@ -3314,12 +3358,12 @@ error:
             
             int gotframe = 0;
             
-            dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+            dispatch_semaphore_wait([CYGCDManager sharedManager].av_send_receive_packet_lock, DISPATCH_TIME_FOREVER);//加锁
             int len = avcodec_send_packet(_audioCodecCtx, packet);
             packet->size -= len;
             packet->data += len;
             gotframe = !avcodec_receive_frame(_audioCodecCtx, audioFrame);
-            dispatch_semaphore_signal(_avSendAndReceivePacketLock);
+            dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
             
             if (len < 0) {
                 LoggerAudio(0, @"decode audio error, skip packet");
@@ -3416,7 +3460,6 @@ error:
 {
     @synchronized (self)
     {
-    
         __weak typeof(self)weakSelf = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             NSString * intervalStr = [NSString stringWithFormat:@"%f", time];
@@ -3431,7 +3474,9 @@ error:
             if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
                 [fileManager createDirectoryAtPath:cyTmpPath withIntermediateDirectories:YES attributes:nil error:nil];
             }
-            NSString * outPath = [cyTmpPath stringByAppendingPathComponent:@"%05d.jpg"];
+//            NSString * outPath = [cyTmpPath stringByAppendingPathComponent:@"%05d.jpg"];
+            NSString * outPath = [cyTmpPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_",[path lastPathComponent]]];
+            outPath = [outPath stringByAppendingString:@"%05d.jpg"];
             char *outPic = (char *)[outPath UTF8String];
             //ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
             char* a[] = {
@@ -3449,7 +3494,10 @@ error:
                 outPic
             };
             
+            dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
             int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
+            dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
+            
             NSError * error = nil;
             NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:1];
             if (result != 0) {
@@ -3474,7 +3522,7 @@ error:
 
 - (void)audioRouteChangeListenerCallback:(NSNotification*)notification
 {
-    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait([CYGCDManager sharedManager].swr_context_lock, DISPATCH_TIME_FOREVER);
 #ifdef USE_OPENAL
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
 #endif
@@ -3493,7 +3541,7 @@ error:
             
         }
     }
-    dispatch_semaphore_signal(_swrContextLock);
+    dispatch_semaphore_signal([CYGCDManager sharedManager].swr_context_lock);
 }
 
 # pragma mark - Last Version API
@@ -3835,14 +3883,14 @@ error:
     
     while (!finished && _formatCtx) {
         CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
-        dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+        dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
         if (av_read_frame(_formatCtx, packet) < 0) {
             _isEOF = YES;
             av_packet_unref(packet);
-            dispatch_semaphore_signal(_avReadFrameLock);//放行
+            dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
             break;
         }
-        dispatch_semaphore_signal(_avReadFrameLock);//放行
+        dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
         CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
         //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
         
@@ -3899,6 +3947,109 @@ static int interrupt_callback(void *ctx)
     if (r) LoggerStream(1, @"DEBUG: INTERRUPT_CALLBACK!");
     return r;
 }
+
+static void my_smbc_get_auth_data_fn (const char *srv,
+                                      const char *shr,
+                                      char *wg, int wglen,
+                                      char *un, int unlen,
+                                      char *pw, int pwlen)
+{
+    
+}
+
+static int my_libsmbc_connect(URLContext *h)
+{
+    LIBSMBContext *libsmbc = h->priv_data;
+//  //这里替换掉原有的ffmpeg写法,是因为每次open_input造成会调用这个connect,然后smbc_new_context造成原有context失效,崩溃
+//    libsmbc->ctx = smbc_new_context();
+//    if (!libsmbc->ctx) {
+//        int ret = AVERROR(errno);
+//        av_log(h, AV_LOG_ERROR, "Cannot create context: %s.\n", strerror(errno));
+//        return ret;
+//    }
+//    if (!smbc_init_context(libsmbc->ctx)) {
+//        int ret = AVERROR(errno);
+//        av_log(h, AV_LOG_ERROR, "Cannot initialize context: %s.\n", strerror(errno));
+//        return ret;
+//    }
+    if (smbc_init(my_smbc_get_auth_data_fn, 0) < 0) {
+        int ret = AVERROR(errno);
+        av_log(h, AV_LOG_ERROR, "Cannot initialize context: %s.\n", strerror(errno));
+        return ret;
+    }
+    libsmbc->ctx = smbc_set_context(NULL);
+
+    smbc_setOptionUserData(libsmbc->ctx, h);
+//    smbc_setFunctionAuthDataWithContext(libsmbc->ctx, libsmbc_get_auth_data);
+
+    if (libsmbc->timeout != -1)
+        smbc_setTimeout(libsmbc->ctx, libsmbc->timeout);
+    if (libsmbc->workgroup)
+        smbc_setWorkgroup(libsmbc->ctx, libsmbc->workgroup);
+
+    if (smbc_init(NULL, 0) < 0) {
+        int ret = AVERROR(errno);
+        av_log(h, AV_LOG_ERROR, "Initialization failed: %s\n", strerror(errno));
+        return ret;
+    }
+    return 0;
+}
+
+static int my_libsmbc_close(URLContext *h)
+{
+    LIBSMBContext *libsmbc = h->priv_data;
+    if (libsmbc->fd >= 0) {
+        smbc_close(libsmbc->fd);
+        libsmbc->fd = -1;
+    }
+    if (libsmbc->ctx) {
+//        smbc_free_context(libsmbc->ctx, 1);
+//        libsmbc->ctx = NULL;
+    }
+    return 0;
+}
+
+static int my_libsmbc_open( URLContext *h, const char *url, int flags)
+{
+    LIBSMBContext *libsmbc = h->priv_data;
+    int access, ret;
+    struct stat st;
+    
+    libsmbc->fd = -1;
+    libsmbc->filesize = -1;
+    
+    if ((ret = my_libsmbc_connect(h)) < 0)
+        goto fail;
+    
+    if ((flags & AVIO_FLAG_WRITE) && (flags & AVIO_FLAG_READ)) {
+        access = O_CREAT | O_RDWR;
+        if (libsmbc->trunc)
+            access |= O_TRUNC;
+    } else if (flags & AVIO_FLAG_WRITE) {
+        access = O_CREAT | O_WRONLY;
+        if (libsmbc->trunc)
+            access |= O_TRUNC;
+    } else
+        access = O_RDONLY;
+    
+    /* 0666 = -rw-rw-rw- = read+write for everyone, minus umask */
+    if ((libsmbc->fd = smbc_open(url, access, 0666)) < 0) {
+        ret = AVERROR(errno);
+        av_log(h, AV_LOG_ERROR, "File open failed: %s\n", strerror(errno));
+        goto fail;
+    }
+    
+    if (smbc_fstat(libsmbc->fd, &st) < 0)
+        av_log(h, AV_LOG_WARNING, "Cannot stat file: %s\n", strerror(errno));
+    else
+        libsmbc->filesize = st.st_size;
+    
+    return 0;
+fail:
+    my_libsmbc_close(h);
+    return ret;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////

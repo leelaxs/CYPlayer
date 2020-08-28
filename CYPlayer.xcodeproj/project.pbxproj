@@ -100,6 +100,7 @@
 		BC0A026E24AB53EB0012BCAF /* CYSonicManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0A026B24AB53E90012BCAF /* CYSonicManager.mm */; };
 		BC0A026F24AB53EB0012BCAF /* sonic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC0A026D24AB53EB0012BCAF /* sonic.cpp */; };
 		BC20A1A221A3B4DB00F88F45 /* CYHardwareDecompressVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */; };
+		BC2D7ED524F8F6B000B8A55A /* CYGCDManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2D7ED324F8F6AF00B8A55A /* CYGCDManager.m */; };
 		BC3BE6FE23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */; };
 		BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
 		BC7A698123CC4E5E00B9494D /* CYFFmpegMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698023CC4E5E00B9494D /* CYFFmpegMetalView.m */; };
@@ -345,6 +346,8 @@
 		BC0A026D24AB53EB0012BCAF /* sonic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sonic.cpp; sourceTree = "<group>"; };
 		BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYHardwareDecompressVideo.m; sourceTree = "<group>"; };
 		BC20A1A121A3B4DB00F88F45 /* CYHardwareDecompressVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYHardwareDecompressVideo.h; sourceTree = "<group>"; };
+		BC2D7ED324F8F6AF00B8A55A /* CYGCDManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYGCDManager.m; sourceTree = "<group>"; };
+		BC2D7ED424F8F6AF00B8A55A /* CYGCDManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYGCDManager.h; sourceTree = "<group>"; };
 		BC3BE6FC23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerSelectTableView.h; sourceTree = "<group>"; };
 		BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerSelectTableView.m; sourceTree = "<group>"; };
 		BC7A697F23CC4E5D00B9494D /* CYFFmpegMetalView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYFFmpegMetalView.h; sourceTree = "<group>"; };
@@ -526,12 +529,12 @@
 		0E24072820FE1630008BEAB5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				BC0A026A24AB53E80012BCAF /* CYSonicManager.h */,
-				BC0A026B24AB53E90012BCAF /* CYSonicManager.mm */,
-				BC0A026C24AB53EA0012BCAF /* sonic.h */,
-				BC0A026D24AB53EB0012BCAF /* sonic.cpp */,
+				BC2D7ED424F8F6AF00B8A55A /* CYGCDManager.h */,
+				BC2D7ED324F8F6AF00B8A55A /* CYGCDManager.m */,
 				0ECD4C192111DFFA0078D24A /* CYAudioManager.h */,
 				0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */,
+				BC20A1A121A3B4DB00F88F45 /* CYHardwareDecompressVideo.h */,
+				BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */,
 				0E24072A20FE1630008BEAB5 /* CYMoreSettingsFooterViewModel.h */,
 				0E24072E20FE1630008BEAB5 /* CYMoreSettingsFooterViewModel.m */,
 				0EF7875021390DCF0072AED4 /* CYOpenALPlayer.h */,
@@ -540,8 +543,8 @@
 				0EF8F4A6212FB6FF0087018F /* CYPCMAudioManager.m */,
 				0ECD4C1B2111DFFA0078D24A /* CYPlayerDecoder.h */,
 				0ECD4C1C2111DFFA0078D24A /* CYPlayerDecoder.m */,
-				BC20A1A121A3B4DB00F88F45 /* CYHardwareDecompressVideo.h */,
-				BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */,
+				BC0A026A24AB53E80012BCAF /* CYSonicManager.h */,
+				BC0A026B24AB53E90012BCAF /* CYSonicManager.mm */,
 				0E24073120FE1630008BEAB5 /* CYVideoPlayerAssetCarrier.h */,
 				0E24072C20FE1630008BEAB5 /* CYVideoPlayerAssetCarrier.m */,
 				0E24072B20FE1630008BEAB5 /* CYVideoPlayerMoreSetting.h */,
@@ -550,6 +553,8 @@
 				0E24072F20FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondary.m */,
 				0E24072D20FE1630008BEAB5 /* CYVideoPlayerSettings.h */,
 				0E24073220FE1630008BEAB5 /* CYVideoPlayerSettings.m */,
+				BC0A026D24AB53EB0012BCAF /* sonic.cpp */,
+				BC0A026C24AB53EA0012BCAF /* sonic.h */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -932,7 +937,7 @@
 				84B261AB1A46A0AE00C8CAA9 /* Resources */,
 				BC0CEE2F22A39DF00006D011 /* Embed Frameworks */,
 				BC3993D722A568C200F67A2F /* CopyFiles */,
-				40C2BCE82D7E8B7149CED74E /* [CP] Embed Pods Frameworks */,
+				AFE759D6F3E3CBE6F29AFBD1 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1027,14 +1032,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		40C2BCE82D7E8B7149CED74E /* [CP] Embed Pods Frameworks */ = {
+		AFE759D6F3E3CBE6F29AFBD1 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CYPlayer/Pods-CYPlayer-frameworks.sh",
-				"${PODS_ROOT}/CYFFmpeg/CYFFmpeg.framework",
+				"${PODS_ROOT}/../../CYFFmpeg/CYFFmpeg.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -1116,6 +1121,7 @@
 				0E2407B320FE1630008BEAB5 /* CYVideoPlayerDraggingProgressView.m in Sources */,
 				0E2407BF20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.m in Sources */,
 				0E2407CB20FE1630008BEAB5 /* CYVideoPlayerLeftControlView.m in Sources */,
+				BC2D7ED524F8F6B000B8A55A /* CYGCDManager.m in Sources */,
 				0E2407F920FF1C97008BEAB5 /* RTSPViewController.m in Sources */,
 				BC20A1A221A3B4DB00F88F45 /* CYHardwareDecompressVideo.m in Sources */,
 				0E2407EB20FE1631008BEAB5 /* CYAttributesFactory.m in Sources */,
