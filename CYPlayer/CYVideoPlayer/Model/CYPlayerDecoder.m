@@ -1206,8 +1206,10 @@ extern  URLProtocol ff_libsmbclient_protocol;
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
+    dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
     int ret;
     if (( ret = formatCtx->io_open(formatCtx, &formatCtx->pb, [path UTF8String], AVIO_FLAG_READ | formatCtx->avio_flags, &_options)) < 0){
+        dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
         return cyPlayerErrorOpenFile;
     }
     
@@ -1231,7 +1233,7 @@ extern  URLProtocol ff_libsmbclient_protocol;
     //init_input-->(io_open:io_open_default)
     //io_open_default-->ffio_open_whitelist-->ffurl_open_whitelist
     //ffurl_open_whitelist--(URLContext)-->ffio_fdopen
-    dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
+    
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         
         if (formatCtx)
@@ -3518,7 +3520,7 @@ error:
                     "-f",
                     "image2",
                     "-r",
-                    "1",
+                    "25",
                     "-vframes",
                     "1",
                     outPic
@@ -4002,12 +4004,17 @@ static int my_libsmbc_connect(URLContext *h)
 //        av_log(h, AV_LOG_ERROR, "Cannot initialize context: %s.\n", strerror(errno));
 //        return ret;
 //    }
-    if (smbc_init(my_smbc_get_auth_data_fn, 0) < 0) {
-        int ret = AVERROR(errno);
-        av_log(h, AV_LOG_ERROR, "Cannot initialize context: %s.\n", strerror(errno));
-        return ret;
-    }
     libsmbc->ctx = smbc_set_context(NULL);
+    if (libsmbc->ctx == NULL) {
+        if (smbc_init(my_smbc_get_auth_data_fn, 0) < 0) {
+            int ret = AVERROR(errno);
+            av_log(h, AV_LOG_ERROR, "Cannot initialize context: %s.\n", strerror(errno));
+            return ret;
+        }
+        libsmbc->ctx = smbc_set_context(NULL);
+    }
+    
+    
 
     smbc_setOptionUserData(libsmbc->ctx, h);
 //    smbc_setFunctionAuthDataWithContext(libsmbc->ctx, libsmbc_get_auth_data);

@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) dispatch_queue_t  setter_getter_concurrent_queue;
 @property (nonatomic, strong) dispatch_semaphore_t swr_context_lock;
 @property (nonatomic, strong) dispatch_semaphore_t sws_context_lock;
+@property (nonatomic, strong) dispatch_queue_t    generate_preview_images_dispatch_queue;
 
 + (CYGCDManager *) sharedManager;
 

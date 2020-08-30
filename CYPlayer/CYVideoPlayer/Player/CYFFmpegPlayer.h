@@ -36,14 +36,14 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
 };
 
 
-typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrame *> * frames, NSError * error);
+typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrameRGB *> * _Nullable frames, NSError * _Nullable error);
 
 typedef void (^CYPlayerSelectionsHandler)(NSInteger selectionsNumber);
 
 
-extern NSString * const CYPlayerParameterMinBufferedDuration;    // Float
-extern NSString * const CYPlayerParameterMaxBufferedDuration;    // Float
-extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
+extern NSString * _Nonnull const CYPlayerParameterMinBufferedDuration;    // Float
+extern NSString * _Nonnull const CYPlayerParameterMaxBufferedDuration;    // Float
+extern NSString * _Nonnull const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 # pragma mark - CYFFmpegPlayer
 
@@ -121,7 +121,15 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)viewDidAppear;
 - (void)viewDidDisappear;
-- (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
+- (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler _Nullable )handler;
+
++ (void)generatedPreviewImagesWithPath:(NSString *_Nullable)path
+                     completionHandler:(void (^_Nullable)(NSMutableArray * _Nullable frames, NSError * _Nullable error))handler;
+
++ (void)generatedPreviewImagesWithPath:(NSString * _Nullable)path
+                                 Count:(NSInteger)imagesCount
+completionHandler:(CYPlayerImageGeneratorCompletionHandler _Nullable)handler;
+
 - (void) setMoviePosition: (CGFloat) position playMode:(BOOL)playMode;
 - (double)currentTime;
 - (NSTimeInterval)totalTime;
