@@ -1189,7 +1189,7 @@ extern  URLProtocol ff_libsmbclient_protocol;
             return cyPlayerErrorOpenFile;
     }
     
-    
+
     
     av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
     av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
@@ -4024,7 +4024,7 @@ static int my_libsmbc_connect(URLContext *h)
     if (libsmbc->workgroup)
         smbc_setWorkgroup(libsmbc->ctx, libsmbc->workgroup);
 
-    if (smbc_init(NULL, 0) < 0) {
+    if (smbc_init(my_smbc_get_auth_data_fn, 0) < 0) {
         int ret = AVERROR(errno);
         av_log(h, AV_LOG_ERROR, "Initialization failed: %s\n", strerror(errno));
         return ret;
