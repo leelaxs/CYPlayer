@@ -1013,7 +1013,8 @@ CYAudioManagerDelegate>
     dispatch_block_t  block = dispatch_block_create_with_qos_class(DISPATCH_BLOCK_BARRIER, QOS_CLASS_USER_INITIATED, 0, ^{
         CFAbsoluteTime executeTime = CFAbsoluteTimeGetCurrent();
         CFAbsoluteTime linkTime = (executeTime- enterQueueTime);
-        if (linkTime > 10) {
+        if (linkTime > 60) {
+            NSLog(@"生成预览图超时：enterQueueTime-%.2fs, executeTime-%.2fs,  linkTime-%.2fs", enterQueueTime, executeTime, linkTime);
             return;
         }
         CYFFmpegPlayer * player = [CYFFmpegPlayer new];
