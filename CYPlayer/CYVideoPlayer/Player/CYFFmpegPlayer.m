@@ -166,6 +166,7 @@ CYAudioManagerDelegate>
     NSDate              *_debugAudioStatusTS;
 #endif
     CFAbsoluteTime      _videoTickStartTime;//用于"渲染执行效率"的计算
+    CFAbsoluteTime      _interval_from_last_buffer_laoding;//计算两次缓冲时间间隔,动态调整最小缓冲时间
     
     //当前清晰度
     CYFFmpegPlayerDefinitionType _definitionType;
@@ -991,21 +992,16 @@ CYAudioManagerDelegate>
     
     __weak __typeof(&*self)weakSelf = self;
     
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        __strong __typeof(&*self)strongSelf = weakSelf;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(8.0 * NSEC_PER_SEC)), [CYGCDManager sharedManager].generate_preview_images_dispatch_queue, ^{
         
-        NSError *error = nil;
-        [decoder openFile:weakSelf.decoder.path error:&error];
-        
-        if (strongSelf) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                __strong __typeof(&*self)strongSelf2 = weakSelf;
-                if (strongSelf2) {
-                    [strongSelf2 setGeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
-                }
-            });
+        if (weakSelf.decoder.path.length > 0) {
+            NSError *error = nil;
+            [decoder openFile:weakSelf.decoder.path error:&error];
+            [weakSelf setGeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
         }
+        
+        
+        
     });
 }
 
@@ -1159,76 +1155,74 @@ CYAudioManagerDelegate>
         [decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
         
         
-        __weak CYFFmpegPlayer *weakSelf = self;
-        __weak CYPlayerDecoder *weakDecoder = decoder;
+        __weak typeof(CYFFmpegPlayer *)weakSelf = self;
+        CYPlayerDecoder *weakDecoder = decoder;
         
         const CGFloat duration = decoder.isNetwork ? .0f : 0.1f;
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), [CYGCDManager sharedManager].generate_preview_images_dispatch_queue, ^{
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [weakSelf showTitle:@"开始生成预览图"];
-            });
-            @autoreleasepool {
-                CGFloat timeInterval = weakDecoder.duration / imagesCount;
-                NSError * error = nil;
-                int i = 0;
-                __strong CYFFmpegPlayer *strongSelf = weakSelf;
-                while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted &&
-                       !strongSelf->_interrupted)
-                    //                for (int i = 0; i < imagesCount; i++)
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf showTitle:@"开始生成预览图"];
+        });
+        @autoreleasepool {
+            CGFloat timeInterval = weakDecoder.duration / imagesCount;
+            NSError * error = nil;
+            int i = 0;
+            CYFFmpegPlayer *strongSelf = weakSelf;
+            while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted &&
+                   !strongSelf->_interrupted)
+                //                for (int i = 0; i < imagesCount; i++)
+            {
+                CYPlayerDecoder *decoder = weakDecoder;
+                
+                if (decoder && decoder.validVideo && decoder.isEOF == NO)
                 {
-                    __strong CYPlayerDecoder *decoder = weakDecoder;
-                    
-                    if (decoder && decoder.validVideo && decoder.isEOF == NO)
+                    NSArray *frames = [decoder decodeFrames:duration];
+                    if (frames.count && [frames firstObject])
                     {
-                        NSArray *frames = [decoder decodeFrames:duration];
-                        if (frames.count && [frames firstObject])
+                        
+                        if (strongSelf)
                         {
-                            
-                            if (strongSelf)
+                            @synchronized(strongSelf->_generatedPreviewImagesVideoFrames)
                             {
-                                @synchronized(strongSelf->_generatedPreviewImagesVideoFrames)
+                                //                                        for (CYPlayerFrame *frame in frames)
+                                CYVideoFrame * frame = [frames firstObject];
                                 {
-                                    //                                        for (CYPlayerFrame *frame in frames)
-                                    CYVideoFrame * frame = [frames firstObject];
+                                    if (frame.type == CYPlayerFrameTypeVideo)
                                     {
-                                        if (frame.type == CYPlayerFrameTypeVideo)
-                                        {
-                                            [strongSelf->_generatedPreviewImagesVideoFrames addObject:frame];
-                                            [decoder setPosition:(timeInterval * (i+1))];
-                                            i++;
-                                        }
+                                        [strongSelf->_generatedPreviewImagesVideoFrames addObject:frame];
+                                        [decoder setPosition:(timeInterval * (i+1))];
+                                        i++;
                                     }
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        if (strongSelf->_generatedPreviewImagesVideoFrames.count < imagesCount) {
-                            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Generated Failed!" };
-                            
-                            error = [NSError errorWithDomain:cyplayerErrorDomain
-                                                        code:-1
-                                                    userInfo:userInfo];
-                        }
-                        strongSelf->_generatedPreviewImageInterrupted = YES;
-                        break;
-                    }
-                    
                 }
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong CYFFmpegPlayer *strongSelf2 = weakSelf;
-                    if (!strongSelf2) {
-                        return;
+                else
+                {
+                    if (strongSelf->_generatedPreviewImagesVideoFrames.count < imagesCount) {
+                        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Generated Failed!" };
+                        
+                        error = [NSError errorWithDomain:cyplayerErrorDomain
+                                                    code:-1
+                                                userInfo:userInfo];
                     }
-                    strongSelf2->_generatedPreviewImageInterrupted = YES;
-                    strongSelf2->_generatedPreviewImagesDecoder = nil;
-                    handler(strongSelf2->_generatedPreviewImagesVideoFrames, error);
-                });
+                    strongSelf->_generatedPreviewImageInterrupted = YES;
+                    break;
+                }
                 
             }
-        });
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong CYFFmpegPlayer *strongSelf2 = weakSelf;
+                if (!strongSelf2) {
+                    return;
+                }
+                strongSelf2->_generatedPreviewImageInterrupted = YES;
+                strongSelf2->_generatedPreviewImagesDecoder = nil;
+                handler(strongSelf2->_generatedPreviewImagesVideoFrames, error);
+            });
+            
+        }
     }
     else
     {
@@ -1447,7 +1441,7 @@ CYAudioManagerDelegate>
         
         if (_decoder.validVideo) {
             __weak typeof(self) _self = self;
-            if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"] || [self.decoder.path hasPrefix:@"XXX-smb"]) {
+            if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"]) {
                 return;
             }
             //先隐藏previewbtn
@@ -2343,6 +2337,30 @@ CYAudioManagerDelegate>
                 if (!_buffered)
                 {
                     _buffered = YES;
+                    if (!_interval_from_last_buffer_laoding) {
+                        _interval_from_last_buffer_laoding = CFAbsoluteTimeGetCurrent();
+                    }
+                    else{
+                        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _interval_from_last_buffer_laoding);
+                        CGFloat delta = ABS(_minBufferedDuration - linkTime);
+                        
+                        if (delta > 0.5 && delta < _minBufferedDuration) {
+                            if (_decoder.isNetwork) {
+                                if (_minBufferedDuration + delta < (NETWORK_MAX_BUFFERED_DURATION)){
+                                    _minBufferedDuration += delta;
+                                }
+                            } else {
+                                if (_minBufferedDuration + delta < (LOCAL_MAX_BUFFERED_DURATION)){
+                                    _minBufferedDuration += delta;
+                                }
+                            }
+                        }
+#ifdef DEBUG
+                        NSLog(@"_interval_from_last_buffer_laoding: %.4f, delta: %.2f, minBufferDuration: %.2f", linkTime, delta, _minBufferedDuration);
+#endif
+                        
+                        _interval_from_last_buffer_laoding = CFAbsoluteTimeGetCurrent();
+                    }
                 }
                 
                 if (self.state != CYFFmpegPlayerPlayState_Buffing) {
@@ -3388,6 +3406,20 @@ CYAudioManagerDelegate>
     }
     
     return ((vm_page_size * vmStats.free_count)) / 1024.0 / 1024.0;// + vm_page_size * vmStats.inactive_count
+}
+
++ (CGFloat)memoryUsage2 {
+    int64_t memoryUsageInByte = 0;
+    task_vm_info_data_t vmInfo;
+    mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+    kern_return_t kernelReturn = task_info(mach_task_self(), TASK_VM_INFO, (task_info_t) &vmInfo, &count);
+    if(kernelReturn == KERN_SUCCESS) {
+        memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
+        NSLog(@"Memory in use (in bytes): %lld", memoryUsageInByte);
+    } else {
+        NSLog(@"Error with task_info(): %s", mach_error_string(kernelReturn));
+    }
+    return memoryUsageInByte / 1024.0 / 1024.0;
 }
 
 - (double)usedMemory

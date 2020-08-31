@@ -79,23 +79,23 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 @interface CYFFmpegPlayer : NSObject
 
-+ (instancetype)sharedPlayer;
++ (instancetype _Nonnull )sharedPlayer;
 
-+ (id) movieViewWithContentPath: (NSString *) path
-                               parameters: (NSDictionary *) parameters;
++ (id _Nullable ) movieViewWithContentPath: (NSString *_Nonnull) path
+                                parameters: (NSDictionary *_Nullable) parameters;
 
-- (void)setupPlayerWithPath:(NSString *)path;
+- (void)setupPlayerWithPath:(NSString * _Nonnull)path;
 
-- (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters;
+- (void)setupPlayerWithPath:(NSString * _Nonnull)path parameters: (NSDictionary * _Nullable) parameters;
 
-- (void)changeDefinitionPath:(NSString *)path;
-- (void)changeSelectionsPath:(NSString *)path;
-- (void)changeLiveDefinitionPath:(NSString *)path;
+- (void)changeDefinitionPath:(NSString * _Nonnull)path;
+- (void)changeSelectionsPath:(NSString * _Nonnull)path;
+- (void)changeLiveDefinitionPath:(NSString * _Nonnull)path;
 
 
-@property (nonatomic, strong) CYPlayerDecoder *decoder;
+@property (nonatomic, strong) CYPlayerDecoder * _Nonnull decoder;
 
-@property (nonatomic, weak) id<CYFFmpegPlayerDelegate> delegate;
+@property (nonatomic, weak) id<CYFFmpegPlayerDelegate> _Nullable delegate;
 
 /*!
  *  present View. support autoLayout.
