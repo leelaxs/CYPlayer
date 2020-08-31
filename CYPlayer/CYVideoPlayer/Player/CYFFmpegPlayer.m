@@ -891,7 +891,6 @@ CYAudioManagerDelegate>
     dispatch_suspend([CYGCDManager sharedManager].generate_preview_images_dispatch_queue);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         dispatch_resume([CYGCDManager sharedManager].generate_preview_images_dispatch_queue);
-        [weakSelf showTitle:@"开始生成预览图"];
     });
     
     
@@ -1000,6 +999,7 @@ CYAudioManagerDelegate>
         
         if (strongSelf) {
             dispatch_async(dispatch_get_main_queue(), ^{
+                
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2) {
                     [strongSelf2 setGeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
@@ -1165,7 +1165,9 @@ CYAudioManagerDelegate>
         const CGFloat duration = decoder.isNetwork ? .0f : 0.1f;
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), [CYGCDManager sharedManager].generate_preview_images_dispatch_queue, ^{
-            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf showTitle:@"开始生成预览图"];
+            });
             @autoreleasepool {
                 CGFloat timeInterval = weakDecoder.duration / imagesCount;
                 NSError * error = nil;
