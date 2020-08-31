@@ -1009,7 +1009,13 @@ CYAudioManagerDelegate>
                                  Count:(NSInteger)imagesCount
                      completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
 {
-    dispatch_async([CYGCDManager sharedManager].generate_preview_images_dispatch_queue, ^{
+    __block CFAbsoluteTime enterQueueTime = CFAbsoluteTimeGetCurrent();
+    dispatch_block_t  block = dispatch_block_create_with_qos_class(DISPATCH_BLOCK_BARRIER, QOS_CLASS_USER_INITIATED, 0, ^{
+        CFAbsoluteTime executeTime = CFAbsoluteTimeGetCurrent();
+        CFAbsoluteTime linkTime = (executeTime- enterQueueTime);
+        if (linkTime > 10) {
+            return;
+        }
         CYFFmpegPlayer * player = [CYFFmpegPlayer new];
         CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
         [decoder setDecodeType:CYVideoDecodeTypeVideo];
@@ -1017,6 +1023,7 @@ CYAudioManagerDelegate>
         [decoder openFile:path error:&error];
         [player set2GeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
     });
+    dispatch_async([CYGCDManager sharedManager].generate_preview_images_dispatch_queue, block);
     
 }
 
