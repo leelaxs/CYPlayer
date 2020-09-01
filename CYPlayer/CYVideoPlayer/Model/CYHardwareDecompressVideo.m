@@ -436,6 +436,7 @@ static void decompressionOutputCallbackRecord(void * CM_NULLABLE decompressionOu
     {
         return;
     }
+    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     CMBlockBufferRef blockBufferRef = NULL;
     CVPixelBufferRef outputPixelBufferRef = NULL;
     
@@ -487,7 +488,10 @@ static void decompressionOutputCallbackRecord(void * CM_NULLABLE decompressionOu
                 outputPixelBufferRef = nil;
                 return;
             }
-            
+            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+#ifdef DEBUG
+            NSLog(@"VTDecompressionSessionDecodeFrame in %.2f ms", linkTime * 1000.0);
+#endif
             completed(outputPixelBufferRef, packet->pts, packet->duration);
             CVPixelBufferRelease(outputPixelBufferRef);
             CFRelease(sampleBufferRef);

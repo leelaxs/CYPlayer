@@ -238,6 +238,7 @@ CYAudioManagerDelegate>
     if (self = [super init]) {
         [self resetSetting];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsPlayerNotification:) name:CYSettingsPlayerNotification object:nil];
+        
     }
     return self;
 }
@@ -259,6 +260,8 @@ CYAudioManagerDelegate>
         [self setupPlayerWithPath:path parameters:parameters];
         self.rate = 1.0;
         [[CYSonicManager sonicManager] setPlaySpeed:1.0];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsPlayerNotification:) name:CYSettingsPlayerNotification object:nil];
     }
     return self;
 }
@@ -737,17 +740,17 @@ CYAudioManagerDelegate>
         if ( !self ) return;
         if ( !self.decoder ) return;
         if (self.rate == rate) { return; }
-        [self pause];
-        [self _startLoading];
+//        [self pause];
+//        [self _startLoading];
+        self.rate = rate;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             //        dispatch_async(dispatch_get_main_queue(), ^{
             //刷新audioManagr缓存队列中未来得及播放完的数据
 #ifdef USE_OPENAL
             [[CYPCMAudioManager audioManager] stopAndCleanBuffer];
 #endif
-            [_self freeBufferedFrames];
-            _self.rate = rate;
-            [_self play];
+//            [_self freeBufferedFrames];
+//            [_self play];
         });
         
         
@@ -1009,12 +1012,22 @@ CYAudioManagerDelegate>
                                  Count:(NSInteger)imagesCount
                      completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
 {
+    
+    NSString * isEnter = [[NSUserDefaults standardUserDefaults] objectForKey:path];
+    if ([isEnter isEqualToString:@"1"]) {
+        return;
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:@"1" forKey:path];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
     __block CFAbsoluteTime enterQueueTime = CFAbsoluteTimeGetCurrent();
     dispatch_block_t  block = dispatch_block_create_with_qos_class(DISPATCH_BLOCK_BARRIER, QOS_CLASS_USER_INITIATED, 0, ^{
         CFAbsoluteTime executeTime = CFAbsoluteTimeGetCurrent();
         CFAbsoluteTime linkTime = (executeTime- enterQueueTime);
-        if (linkTime > 60) {
+        if (linkTime > 30) {//二十秒以后的任务先取消掉吧
             NSLog(@"生成预览图超时：enterQueueTime-%.2fs, executeTime-%.2fs,  linkTime-%.2fs", enterQueueTime, executeTime, linkTime);
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:path];
+            [[NSUserDefaults standardUserDefaults] synchronize];
             return;
         }
         CYFFmpegPlayer * player = [CYFFmpegPlayer new];
@@ -1022,8 +1035,13 @@ CYAudioManagerDelegate>
         [decoder setDecodeType:CYVideoDecodeTypeVideo];
         NSError *error = nil;
         [decoder openFile:path error:&error];
-        [player set2GeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
+        [player set2GeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:^(NSMutableArray<CYVideoFrameRGB *> * _Nullable frames, NSError * _Nullable error) {
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:path];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            handler(frames, error);
+        }];
     });
+    
     dispatch_async([CYGCDManager sharedManager].generate_preview_images_dispatch_queue, block);
     
 }
@@ -2952,11 +2970,13 @@ CYAudioManagerDelegate>
     _volBrigControl.volumeChanged = ^(float volume) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ( self->_moreSettingFooterViewModel.volumeChanged ) self->_moreSettingFooterViewModel.volumeChanged(volume);
     };
     
     _volBrigControl.brightnessChanged = ^(float brightness) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+         if ( self->_moreSettingFooterViewModel.brightnessChanged ) self->_moreSettingFooterViewModel.brightnessChanged(self.volBrigControl.brightness);
     };
     
     return _volBrigControl;
@@ -3331,6 +3351,12 @@ CYAudioManagerDelegate>
     self.hiddenMoreSecondarySettingView = YES;
     self.controlView.bottomProgressSlider.value = 0;
     self.controlView.bottomProgressSlider.bufferProgress = 0;
+    if ( self->_moreSettingFooterViewModel.volumeChanged ) {
+        self->_moreSettingFooterViewModel.volumeChanged(self.volBrigControl.volume);
+    }
+    if ( self->_moreSettingFooterViewModel.brightnessChanged ) {
+        self->_moreSettingFooterViewModel.brightnessChanged(self.volBrigControl.brightness);
+    }
     [self _prepareState];
 }
 
@@ -4362,7 +4388,8 @@ vm_size_t memory_usage(void) {
     _cyAnima(^{
         [self _playState];
     });
-    
+    if ( self->_moreSettingFooterViewModel.playerRateChanged )
+        self->_moreSettingFooterViewModel.playerRateChanged(rate);
     if ( self.rateChanged ) self.rateChanged(self);
 }
 

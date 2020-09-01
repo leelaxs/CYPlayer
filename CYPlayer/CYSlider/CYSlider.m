@@ -235,14 +235,7 @@
 - (void)handleTapGR:(UITapGestureRecognizer *)tap {
     CGPoint startPoint = [tap locationInView:tap.view];
     CGFloat value = startPoint.x / tap.view.ccy_w;
-    if (value + self.minValue <= self.maxValue)
-    {
-        value = value + self.minValue;
-    }
-    else
-    {
-        value = self.maxValue;
-    }
+    value = value * (self.maxValue - self.minValue) + self.minValue;
     self.value = value;
     
     if ([self.delegate respondsToSelector:@selector(sliderClick:)] )
@@ -273,14 +266,7 @@
         case UIGestureRecognizerStateBegan: {
             _isDragging = YES;
             CGFloat value = startPoint.x / pan.view.ccy_w;
-            if (value + self.minValue <= self.maxValue)
-            {
-                value = value + self.minValue;
-            }
-            else
-            {
-                value = self.maxValue;
-            }
+            value = value * (self.maxValue - self.minValue) + self.minValue;
             self.value = value;
             self.thumbImageView.image = self.thumbnail_sel;
             [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
@@ -291,14 +277,7 @@
         }
         case UIGestureRecognizerStateChanged: {
             CGFloat value = startPoint.x / pan.view.ccy_w;
-            if (value + self.minValue <= self.maxValue)
-            {
-                value = value + self.minValue;
-            }
-            else
-            {
-                value = self.maxValue;
-            }
+           value = value * (self.maxValue - self.minValue) + self.minValue;
             self.value = value;
             if ( ![self.delegate respondsToSelector:@selector(sliderDidDrag:)] ) break;
             [self.delegate sliderDidDrag:self];

@@ -98,7 +98,7 @@
     
     if ( model.initialVolumeValue ) self.volumeSlider.value = model.initialVolumeValue();
     if ( model.initialBrightnessValue ) self.brightnessSlider.value = model.initialBrightnessValue();
-    if ( model.initialPlayerRateValue )self.rateSlider.value = model.initialPlayerRateValue();
+    if ( model.initialPlayerRateValue ) self.rateSlider.value = model.initialPlayerRateValue();
 }
 
 - (void)_moreSetupViews {
@@ -110,7 +110,6 @@
     [self addSubview:volumeBackgroundView];
     [self addSubview:brightnessBackgroundView];
     [self addSubview:rateBackgroundView];
-    rateBackgroundView.hidden = YES;
     
     [rateBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.offset(25);
@@ -198,7 +197,7 @@
     _rateSlider = [self slider];
     _rateSlider.tag = CYVideoPlaySliderTag_Rate;
     _rateSlider.minValue = 0.5;
-    _rateSlider.maxValue = 1.5;
+    _rateSlider.maxValue = 2.0;
     _rateSlider.value = 1.0;
     return _rateSlider;
 }

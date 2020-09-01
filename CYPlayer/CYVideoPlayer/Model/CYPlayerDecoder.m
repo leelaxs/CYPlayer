@@ -359,6 +359,7 @@ static BOOL isNetworkPath (NSString *path)
 static int interrupt_callback(void *ctx);
 static int my_libsmbc_open( URLContext *h, const char *url, int flags);
 static int my_libsmbc_close( URLContext *h );
+static int my_libsmbc_close2( URLContext *h );
 static int my_libsmbc_connect(URLContext *h);
 
 # pragma mark - ///////////////////////////
@@ -2613,20 +2614,23 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         CGFloat curr_targetPos = weakSelf.targetPosition;
         while (!finished && strongSelf->_formatCtx && curr_targetPos == weakSelf.targetPosition) {
 //            NSLog(@"%f", curr_targetPos);
+            
+            dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
+            
             CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             ///读取下一帧开始
-            dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
             if (av_read_frame(strongSelf->_formatCtx, packet) < 0) {
                 strongSelf->_isEOF = YES;
                 av_packet_unref(packet);
                 dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
                 break;
             }
+             CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+#ifdef DEBUG
+            NSLog(@"av_read_frame in %.2f ms", linkTime * 1000.0);
+#endif
             
             dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
-            ///读取下一帧结束
-            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-            //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
             
             CYPlayerFrame * frame = [weakSelf handlePacket:packet audioFrame:audioFrame videoFrame:videoFrame picture:picture isPictureValid:isPictureValid];
 //            NSLog(@"objc对象实际分配的内存大小: %zd", malloc_size((__bridge const void *)(frame)));
@@ -3297,10 +3301,15 @@ error:
                 
                 int gotframe = 0;
                 dispatch_semaphore_wait([CYGCDManager sharedManager].av_send_receive_packet_lock, DISPATCH_TIME_FOREVER);//加锁
+                CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
                 int len = avcodec_send_packet(_videoCodecCtx, packet);
                 packet->size -= len;
                 packet->data += len;
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
+                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+#ifdef DEBUG
+                NSLog(@"avcodec_send_receive_packet in %.2f ms", linkTime * 1000.0);
+#endif
                 dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
                 
                 if (len < 0) {
@@ -3986,6 +3995,8 @@ static void my_smbc_get_auth_data_fn (const char *srv,
     
 }
 
+static CFAbsoluteTime _smb_last_link_time;//用于samba的session超时计算
+
 static int my_libsmbc_connect(URLContext *h)
 {
     LIBSMBContext *libsmbc = h->priv_data;
@@ -4009,6 +4020,23 @@ static int my_libsmbc_connect(URLContext *h)
             return ret;
         }
         libsmbc->ctx = smbc_set_context(NULL);
+    }
+    
+    //#ifdef DEBUG
+    if (!_smb_last_link_time) {
+        _smb_last_link_time = CFAbsoluteTimeGetCurrent();
+    }
+    else{
+        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _smb_last_link_time);
+#ifdef DEBUG
+        NSLog(@"_smb_last_link_time: %.2f", linkTime);
+#endif
+        
+        if (linkTime > 120) {
+            
+        }
+        
+        _smb_last_link_time = CFAbsoluteTimeGetCurrent();
     }
     
     
@@ -4044,6 +4072,23 @@ static int my_libsmbc_close(URLContext *h)
     return 0;
 }
 
+static int my_libsmbc_close2(URLContext *h)
+{
+    LIBSMBContext *libsmbc = h->priv_data;
+    if (libsmbc->fd >= 0) {
+        smbc_close(libsmbc->fd);
+        libsmbc->fd = -1;
+    }
+    if (libsmbc->ctx) {
+        if (!smbc_free_context(libsmbc->ctx, 1)){
+            libsmbc->ctx = (SMBCCTX *)smbc_new_context();
+            smbc_init_context(libsmbc->ctx);
+            smbc_set_context(libsmbc->ctx);
+        }
+    }
+    return 0;
+}
+
 static int my_libsmbc_open( URLContext *h, const char *url, int flags)
 {
     LIBSMBContext *libsmbc = h->priv_data;
@@ -4071,6 +4116,9 @@ static int my_libsmbc_open( URLContext *h, const char *url, int flags)
     if ((libsmbc->fd = smbc_open(url, access, 0666)) < 0) {
         ret = AVERROR(errno);
         av_log(h, AV_LOG_ERROR, "File open failed: %s\n", strerror(errno));
+        if (errno == ETIMEDOUT) {
+            goto fail2;
+        }
         goto fail;
     }
     
@@ -4082,6 +4130,10 @@ static int my_libsmbc_open( URLContext *h, const char *url, int flags)
     return 0;
 fail:
     my_libsmbc_close(h);
+    return ret;
+    
+fail2:
+    my_libsmbc_close2(h);
     return ret;
 }
 
