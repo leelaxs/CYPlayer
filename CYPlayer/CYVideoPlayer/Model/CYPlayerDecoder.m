@@ -3174,61 +3174,76 @@ error:
                 {
                     [self.hwDecompressor decompressWithPacket:packet Completed:^(CVPixelBufferRef imageBuffer, int64_t pkt_pts, int64_t pkt_duration) {
                         
-                        CYVideoFrame * frame;
-                        
-                        CGFloat position = pkt_pts * _videoTimeBase;
-                        CGFloat duration = pkt_duration * _videoTimeBase * self.rate;
-                        
-                        
-                        CVPixelBufferLockBaseAddress(imageBuffer, 0);
-                        
-                        int width = (int)CVPixelBufferGetWidth(imageBuffer);
-                        int height = (int)CVPixelBufferGetHeight(imageBuffer);
-                        
-                        
-                        if (_videoFrameFormat == CYVideoFrameFormatYUV)
-                        {
-                            // yuv每 的字节数与总
-                            size_t yBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
-                            size_t cbBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
-                            size_t crBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 2);
-//                            size_t totalByte = yBytes*height + cbBytes*height/2 + crBytes*height/2;
-                            // y的数据， 度:yBytes*height
-                            Byte* luma = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
-                            // cb的数据， 度:cbBytes*height/2
-                            Byte* chromaB = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
-                            // cr的数据， 度:crBytes*height/2
-                            Byte* chromaR = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 2);
+                        if (imageBuffer == NULL) {
+                            
+                            CYVideoFrame * frame;
+                            
+                            CGFloat position = pkt_pts * _videoTimeBase;
+                            CGFloat duration = pkt_duration * _videoTimeBase * self.rate;
                             
                             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
+                            yuvFrame.position = position;
+                            yuvFrame.duration = duration;
                             
-                            if (luma) yuvFrame.luma = [NSData dataWithBytes:luma length:yBytes*height];
+                            result_frame = yuvFrame;
+      
+                        }else {
+                            CYVideoFrame * frame;
                             
-                            if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
+                            CGFloat position = pkt_pts * _videoTimeBase;
+                            CGFloat duration = pkt_duration * _videoTimeBase * self.rate;
                             
-                            if(chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
                             
-                            struct CYPixelBufferBytesPerRowOfPlane p = {yBytes, cbBytes, crBytes};
-                            yuvFrame.bytesPerRowOfPlans = p;
+                            CVPixelBufferLockBaseAddress(imageBuffer, 0);
                             
-                            frame = yuvFrame;
+                            int width = (int)CVPixelBufferGetWidth(imageBuffer);
+                            int height = (int)CVPixelBufferGetHeight(imageBuffer);
                             
-                            frame.width = width;
-                            frame.height = height;
-                            frame.position = position;
-                            frame.duration = duration;
+                            
+                            if (_videoFrameFormat == CYVideoFrameFormatYUV)
+                            {
+                                // yuv每 的字节数与总
+                                size_t yBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
+                                size_t cbBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
+                                size_t crBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 2);
+                                //                            size_t totalByte = yBytes*height + cbBytes*height/2 + crBytes*height/2;
+                                // y的数据， 度:yBytes*height
+                                Byte* luma = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
+                                // cb的数据， 度:cbBytes*height/2
+                                Byte* chromaB = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
+                                // cr的数据， 度:crBytes*height/2
+                                Byte* chromaR = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 2);
+                                
+                                CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
+                                
+                                if (luma) yuvFrame.luma = [NSData dataWithBytes:luma length:yBytes*height];
+                                
+                                if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
+                                
+                                if(chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
+                                
+                                struct CYPixelBufferBytesPerRowOfPlane p = {yBytes, cbBytes, crBytes};
+                                yuvFrame.bytesPerRowOfPlans = p;
+                                
+                                frame = yuvFrame;
+                                
+                                frame.width = width;
+                                frame.height = height;
+                                frame.position = position;
+                                frame.duration = duration;
+                            }
+                            else
+                            {
+                                
+                            }
+                            
+                            if (frame)
+                            {
+                                result_frame = frame;
+                            }
+                            
+                            CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
                         }
-                        else
-                        {
-                            
-                        }
-                        
-                        if (frame)
-                        {
-                            result_frame = frame;
-                        }
-                        
-                        CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
                     }];
                 }
                     break;

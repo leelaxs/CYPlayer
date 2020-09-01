@@ -483,6 +483,7 @@ static void decompressionOutputCallbackRecord(void * CM_NULLABLE decompressionOu
                                                                       &infoFlags);
             
             if(decodeStatus != noErr){
+                completed(NULL, packet->pts, packet->duration);
                 CFRelease(sampleBufferRef);
                 CFRelease(blockBufferRef);
                 outputPixelBufferRef = nil;

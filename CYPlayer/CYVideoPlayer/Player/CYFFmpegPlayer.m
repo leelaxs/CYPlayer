@@ -2929,13 +2929,18 @@ CYAudioManagerDelegate>
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         self.lockScreen = YES;
-        //        [self pause];
+        if (self.settings.useHWDecompressor) {
+            [self.decoder setUseHWDecompressor:NO];
+        }
     };
     
     _registrar.didBecomeActive = ^(CYVideoPlayerRegistrar * _Nonnull registrar) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         self.lockScreen = NO;
+        if (self.settings.useHWDecompressor) {
+            [self.decoder setUseHWDecompressor:YES];
+        }
         if ( self.state == CYFFmpegPlayerPlayState_PlayEnd ||
             self.state == CYFFmpegPlayerPlayState_Unknown ||
             self.state == CYFFmpegPlayerPlayState_PlayFailed ) return;
