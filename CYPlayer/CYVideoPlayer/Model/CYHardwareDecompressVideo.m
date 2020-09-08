@@ -436,7 +436,7 @@ static void decompressionOutputCallbackRecord(void * CM_NULLABLE decompressionOu
     {
         return;
     }
-    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+    
     CMBlockBufferRef blockBufferRef = NULL;
     CVPixelBufferRef outputPixelBufferRef = NULL;
     
@@ -475,6 +475,8 @@ static void decompressionOutputCallbackRecord(void * CM_NULLABLE decompressionOu
         if(createStatus == kCMBlockBufferNoErr && sampleBufferRef){
             VTDecodeFrameFlags frameFlags = 0;
             VTDecodeInfoFlags infoFlags = 0;
+            
+            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             
             OSStatus decodeStatus = VTDecompressionSessionDecodeFrame(_decompressionSession,
                                                                       sampleBufferRef,

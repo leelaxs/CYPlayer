@@ -3171,6 +3171,7 @@ error:
             switch (_videoCodecCtx->profile) {
                 case FF_PROFILE_H264_MAIN:
                 case FF_PROFILE_H264_HIGH:
+                case FF_PROFILE_H264_BASELINE:
                 {
                     [self.hwDecompressor decompressWithPacket:packet Completed:^(CVPixelBufferRef imageBuffer, int64_t pkt_pts, int64_t pkt_duration) {
                         
@@ -3247,7 +3248,7 @@ error:
                     }];
                 }
                     break;
-                case FF_PROFILE_H264_BASELINE:
+                
                 default:
                 {
                     CVPixelBufferRef imageBuffer = [self.hwDecompressor deCompressedCMSampleBufferWithData:packet andOffset:0];
