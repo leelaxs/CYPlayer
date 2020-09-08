@@ -582,11 +582,11 @@
 			isa = PBXGroup;
 			children = (
 				0E24073920FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.h */,
-				0E24073A20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.m */,
-				0E24073B20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsView.m */,
 				0E24073C20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.m */,
 				0E24073D20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.h */,
+				0E24073A20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.m */,
 				0E24073E20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsView.h */,
+				0E24073B20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsView.m */,
 			);
 			path = MoreSetting;
 			sourceTree = "<group>";
@@ -594,12 +594,12 @@
 		0E24073F20FE1630008BEAB5 /* Secondary */ = {
 			isa = PBXGroup;
 			children = (
-				0E24074020FE1630008BEAB5 /* CYVideoPlayerMoreSettingsSecondaryHeaderView.m */,
+				0E24074420FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryColCell.h */,
 				0E24074120FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryColCell.m */,
 				0E24074220FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryView.h */,
-				0E24074320FE1630008BEAB5 /* CYVideoPlayerMoreSettingsSecondaryHeaderView.h */,
-				0E24074420FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryColCell.h */,
 				0E24074520FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryView.m */,
+				0E24074320FE1630008BEAB5 /* CYVideoPlayerMoreSettingsSecondaryHeaderView.h */,
+				0E24074020FE1630008BEAB5 /* CYVideoPlayerMoreSettingsSecondaryHeaderView.m */,
 			);
 			path = Secondary;
 			sourceTree = "<group>";
@@ -937,7 +937,7 @@
 				84B261AB1A46A0AE00C8CAA9 /* Resources */,
 				BC0CEE2F22A39DF00006D011 /* Embed Frameworks */,
 				BC3993D722A568C200F67A2F /* CopyFiles */,
-				C1F4B42ACAD3D68BA42C6AC5 /* [CP] Embed Pods Frameworks */,
+				CA125DD7DCD371E1F128FA57 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1032,7 +1032,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		C1F4B42ACAD3D68BA42C6AC5 /* [CP] Embed Pods Frameworks */ = {
+		CA125DD7DCD371E1F128FA57 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

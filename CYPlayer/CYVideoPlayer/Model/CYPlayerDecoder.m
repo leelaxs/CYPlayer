@@ -963,6 +963,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
         av_seek_frame(_formatCtx, -1, (seconds)*AV_TIME_BASE + (double)_formatCtx->start_time, AVSEEK_FLAG_BACKWARD);//不指定stream进行seek
         avcodec_flush_buffers(_videoCodecCtx);
         if ([self validAudio]) {
+//            int64_t ts = (int64_t)(seconds / (_audioTimeBase));
+//            av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_ANY);
             avcodec_flush_buffers(_audioCodecCtx);
         }
         
@@ -1193,8 +1195,9 @@ extern  URLProtocol ff_libsmbclient_protocol;
     
 
     
-    av_dict_set(&_options, "rtsp_transport", "udp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-    av_dict_set(&_options, "timeout", "5000", 0);//设置超时3秒
+//    av_dict_set(&_options, "rtsp_transport", "udp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
+//    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
+//    av_dict_set(&_options, "timeout", NULL, 0);
 //    av_dict_set(&_options, "re", "25", 0);
 //    av_dict_set(&_options, "r", "25", 0);
 //    av_dict_set(&_options, "qp", "0", 0);

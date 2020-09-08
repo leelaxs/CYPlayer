@@ -86,7 +86,7 @@
     [self addPlayer];
 //    [self addPlayer1];
     
-//    [self addInfoBtn];
+    [self addInfoBtn];
     //    [self addRateView];
 }
 

@@ -54,7 +54,10 @@
                           localV,
                           @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
                           @"smb://guest@172.16.9.10/video/test.mp4",
-                          @"smb://WORKGROUP;yellowei:1314-Wamq@192.168.31.170/Movie/Marval Movie/04 Thor 2011 BluRay 720p DTS x264-MgB [ETRG].mkv"
+                          @"smb://WORKGROUP;yellowei:1314-Wamq@192.168.31.170/Movie/Marval Movie/04 Thor 2011 BluRay 720p DTS x264-MgB [ETRG].mkv",
+                          @"http://vodplay.yayi360.com/4e1a32341ace4d81b36196d1f6b45424/7d7b51c88c4c459c91060a5b5b4c2aad-e191ad2ec4e7b8414d510ffc49d48809-hd.mp4",
+                          @"http://vodplay.yayi360.com/88d5b10aa0584e6a9310f5b310204360/487ec01ff3ab458e89436925d6051732-ce1bcce567cf3860912679033fc47585-fd.mp4",
+                          @"http://vodplay.yayi360.com/88d5b10aa0584e6a9310f5b310204360/487ec01ff3ab458e89436925d6051732-7e682fad0a4065e50525c2cbd838b640-hd.mp4"
                           ];
         
     }

@@ -1400,6 +1400,7 @@ CYAudioManagerDelegate>
         });
         
     } else {
+        [self setupPresentView];
         if (!_interrupted) {
             [self handleDecoderMovieError: error];
             self.error = error;
