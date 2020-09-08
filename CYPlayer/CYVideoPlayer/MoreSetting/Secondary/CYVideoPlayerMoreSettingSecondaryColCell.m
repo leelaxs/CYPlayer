@@ -38,7 +38,7 @@
     [_itemBtn setAttributedTitle:[CYAttributesFactory producingWithTask:^(CYAttributeWorker * _Nonnull worker) {
         
         if ( model.image ) {
-            worker.insert(model.image, 0, CGPointZero, model.image.size);
+            worker.insert(model.image, 0, CGPointZero, CGSizeMake(50, 50));
         }
         
         if ( model.title ) {
