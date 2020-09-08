@@ -31,6 +31,9 @@
     [self brightnessView];
     
     [[AVAudioSession sharedInstance] addObserver:self forKeyPath:@"outputVolume" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:(void *)[AVAudioSession sharedInstance]];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(screenBrightnessDidChangeNotification:) name:UIScreenBrightnessDidChangeNotification object:nil];
+    
 
     return self;
 }
@@ -44,6 +47,7 @@
 
 - (void)dealloc {
     [[AVAudioSession sharedInstance] removeObserver:self forKeyPath:@"outputVolume"];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (CYVideoPlayerTipsView *)brightnessView {
@@ -114,6 +118,10 @@
 
 - (float)brightness {
     return [UIScreen mainScreen].brightness;
+}
+
+- (void)screenBrightnessDidChangeNotification:(NSNotification *)notifi {
+//    if ( _brightnessChanged ) _brightnessChanged([UIScreen mainScreen].brightness);
 }
 
 @end

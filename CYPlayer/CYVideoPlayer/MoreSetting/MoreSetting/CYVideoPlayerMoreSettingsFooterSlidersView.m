@@ -91,12 +91,14 @@
     model.brightnessChanged = ^(float brightness) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ( self.brightnessSlider.isDragging ) return;
         self.brightnessSlider.value = brightness;
     };
     
     model.playerRateChanged = ^(float rate) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ( self.rateSlider.isDragging ) return;
         self.rateSlider.value = rate;
     };
     

@@ -2984,7 +2984,7 @@ CYAudioManagerDelegate>
     _volBrigControl.brightnessChanged = ^(float brightness) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
-         if ( self->_moreSettingFooterViewModel.brightnessChanged ) self->_moreSettingFooterViewModel.brightnessChanged(self.volBrigControl.brightness);
+         if ( self->_moreSettingFooterViewModel.brightnessChanged ) self->_moreSettingFooterViewModel.brightnessChanged(brightness);
     };
     
     return _volBrigControl;
