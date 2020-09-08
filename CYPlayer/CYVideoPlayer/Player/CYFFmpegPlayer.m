@@ -275,10 +275,12 @@ CYAudioManagerDelegate>
     [self view];
     [self orentation];
     [self volBrig];
-    //__weak typeof(self) _self = self;
-    [self settingPlayer:^(CYVideoPlayerSettings * _Nonnull settings) {
-        
-    }];
+    __weak typeof(self) _self = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [_self settingPlayer:^(CYVideoPlayerSettings * _Nonnull settings) {
+            
+        }];
+    });
     [self registrar];
     
     [self _unknownState];

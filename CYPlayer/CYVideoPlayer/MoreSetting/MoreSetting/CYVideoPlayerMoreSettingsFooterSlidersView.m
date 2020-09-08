@@ -65,7 +65,11 @@
     _volumeSlider.thumbnail_nor = _brightnessSlider.thumbnail_nor = _rateSlider.thumbnail_nor = settings.progress_thumbImage_nor;
     _volumeSlider.thumbnail_sel = _brightnessSlider.thumbnail_sel = _rateSlider.thumbnail_sel = settings.progress_thumbImage_nor;
     _volumeSlider.thumbImageView.image = _brightnessSlider.thumbImageView.image = _rateSlider.thumbImageView.image = settings.progress_thumbImage_nor;
-    
+    if (settings.enableProgressControl) {
+        _rateSlider.userInteractionEnabled = YES;
+    }else {
+        _rateSlider.userInteractionEnabled = NO;
+    }
 }
 
 - (void)dealloc {
