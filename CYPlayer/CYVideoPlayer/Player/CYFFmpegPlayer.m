@@ -1204,7 +1204,7 @@ CYAudioManagerDelegate>
                 
                 if (decoder && decoder.validVideo && decoder.isEOF == NO)
                 {
-                    NSArray *frames = [decoder decodeFrames:duration];
+                    NSArray *frames = [decoder decodePreviewImagesFrames:duration];
                     if (frames.count && [frames firstObject])
                     {
                         
@@ -1238,7 +1238,7 @@ CYAudioManagerDelegate>
                     strongSelf->_generatedPreviewImageInterrupted = YES;
                     break;
                 }
-                
+                sleep(5);
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong CYFFmpegPlayer *strongSelf2 = weakSelf;
@@ -1290,7 +1290,7 @@ CYAudioManagerDelegate>
                     [decoder setPosition:timeInterval / 2.0];
                 }
                 
-                NSArray *frames = [decoder decodeFrames:duration];
+                NSArray *frames = [decoder decodePreviewImagesFrames:duration];
                 if (frames.count && [frames firstObject])
                 {
                     

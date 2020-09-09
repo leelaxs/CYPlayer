@@ -2092,6 +2092,101 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     return NO;
 }
 
+- (CYVideoFrame *) handlePreviewImagesVideoFrame:(AVFrame *)videoFrame Picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
+{
+    if (!videoFrame->data[0])
+        return nil;
+    
+    CYVideoFrame *frame;
+    
+    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+    
+    CGFloat position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
+    CGFloat duration = 0.0;
+    const int64_t frameDuration = av_frame_get_pkt_duration(videoFrame);
+    if (frameDuration) {
+        
+        duration = frameDuration * _videoTimeBase; //* self.rate;
+        duration += videoFrame->repeat_pict * _videoTimeBase * 0.5;
+        
+    } else {
+        // sometimes, ffmpeg unable to determine a frame duration
+        // as example yuvj420p stream from web camera
+        duration = 1.0 / _fps;
+    }
+    
+    
+    int width = _videoCodecCtx->width;
+    int height = _videoCodecCtx->height;
+    if (!(_dstWidth > 0 && _dstHeight > 0))
+    {
+//        get_video_scale_max_size(_videoCodecCtx, &width, &height);
+        _dstWidth = width;
+        _dstHeight = height;
+    }
+    else
+    {
+        width = _dstWidth;
+        height = _dstHeight;
+    }
+    
+    
+    if (!_swsContext &&
+        ![self setupScalerWithPicture:picture isValid:isPictureValid Width:width Heigth:height DstFormat:AV_PIX_FMT_RGB24]) {
+        
+        LoggerVideo(0, @"fail setup video scaler");
+        return nil;
+    }
+    
+    if (!(*isPictureValid)) {
+        *isPictureValid = cypicture_alloc(picture,
+                                          AV_PIX_FMT_RGB24,
+                                          width,
+                                          height) == 0;
+        
+        if (*isPictureValid == NO)
+        {
+            LoggerVideo(0, @"fail setup video picture");
+            return nil;
+        }
+    }
+    
+    dispatch_semaphore_wait([CYGCDManager sharedManager].sws_context_lock, DISPATCH_TIME_FOREVER);
+    sws_scale(_swsContext,
+              (const uint8_t **)videoFrame->data,
+              videoFrame->linesize,
+              0,
+              _videoCodecCtx->height,
+              (*picture).data,
+              (*picture).linesize);
+    dispatch_semaphore_signal([CYGCDManager sharedManager].sws_context_lock);
+    
+    CYVideoFrameRGB *rgbFrame = [[CYVideoFrameRGB alloc] init];
+    
+    rgbFrame.linesize = (*picture).linesize[0];
+    rgbFrame.rgb = [NSData dataWithBytes:(*picture).data[0]
+                                  length:rgbFrame.linesize * height];
+    frame = rgbFrame;
+    
+    frame.width = width;
+    frame.height = height;
+    frame.position = position;
+    frame.duration = duration;
+    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+    //NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
+#if 0
+    LoggerVideo(2, @"VFD: %.4f %.4f | %lld ",
+                frame.position,
+                frame.duration,
+                av_frame_get_pkt_pos(videoFrame));
+    
+//    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+    //NSLog(@"Linked in %f ms", linkTime *1000.0);
+#endif
+    
+    return frame;
+}
+
 - (CYVideoFrame *) handleVideoFrame:(AVFrame *)videoFrame Picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     if (!videoFrame->data[0])
@@ -3162,6 +3257,75 @@ error:
     }
 }
 
+- (CYPlayerFrame *)handlePreviewImagesPacket:(AVPacket *)packet videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
+{
+    __block CYPlayerFrame * result_frame = nil;
+    CGFloat curr_targetPos = self.targetPosition;
+    if ((*packet).stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo)
+    {
+        int pktSize = (*packet).size;
+        while (pktSize > 0 && _videoCodecCtx && curr_targetPos == self.targetPosition) {
+            
+            int gotframe = 0;
+            dispatch_semaphore_wait([CYGCDManager sharedManager].av_send_receive_packet_lock, DISPATCH_TIME_FOREVER);//加锁
+            
+            int len = avcodec_send_packet(_videoCodecCtx, packet);
+            packet->size -= len;
+            packet->data += len;
+            gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
+            
+            dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
+            
+            if (len < 0) {
+                LoggerVideo(0, @"decode video error, skip packet");
+                break;
+            }
+            
+            if (gotframe) {
+                CGFloat curr_position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
+                if (curr_position >= self.targetPosition)
+                {
+                    CYVideoFrame *frame = nil;
+                    
+                    if (self.validFilter)
+                    {
+                        if (av_buffersrc_add_frame(_buffersrc_ctx, videoFrame) < 0) {
+                            printf( "Error while feeding the filtergraph\n");
+                            //                    break;
+                        }
+                        AVFrame * pFrame_out = av_frame_alloc();
+                        int ret = av_buffersink_get_frame(_buffersink_ctx, pFrame_out);
+                        if (ret < 0)
+                        {
+                            av_frame_free(&pFrame_out);
+                            continue;
+                            
+                        }
+                        frame = [self handleVideoFrame:pFrame_out Picture:picture isPictureValid:isPictureValid];
+                        av_frame_free(&pFrame_out);
+                    }
+                    else
+                    {
+                        frame = [self handleVideoFrame:videoFrame Picture:picture isPictureValid:isPictureValid];
+                    }
+                    
+                    if (frame) {
+                        
+                        result_frame = frame;
+                    }
+                }
+            }
+            
+            if (0 == len)
+                break;
+            
+            pktSize -= len;
+        }
+        
+    }
+    return result_frame;
+}
+
 - (CYPlayerFrame *)handlePacket:(AVPacket *)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     __block CYPlayerFrame * result_frame = nil;
@@ -3921,6 +4085,76 @@ error:
     }
     av_packet_unref(&packet);
     
+    return result;
+}
+
+- (NSArray *) decodePreviewImagesFrames: (CGFloat) minDuration
+{
+    if (_videoStream == -1 &&
+        _audioStream == -1)
+        return nil;
+    
+    NSMutableArray *result = [NSMutableArray array];
+    
+    AVPacket * packet = av_packet_alloc();
+    
+    CGFloat decodedDuration = 0;
+    
+    BOOL finished = NO;
+    
+    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+    
+    while (!finished && _formatCtx) {
+//        CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+        dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
+        if (av_read_frame(_formatCtx, packet) < 0) {
+            _isEOF = YES;
+            av_packet_unref(packet);
+            dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
+            break;
+        }
+        dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
+//        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+        //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
+        
+        CYPlayerFrame * frame = [self handlePreviewImagesPacket:packet videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid];
+        if (frame)
+        {
+            [result addObject:frame];
+            if (_videoStream == -1) {
+                if (frame.position >= _position)
+                {
+                    _position = _position + frame.duration;
+                    decodedDuration += frame.duration;
+                }
+                if (decodedDuration > minDuration)
+                    finished = YES;
+            }
+            else
+            {
+                if (frame.type == CYPlayerFrameTypeVideo)
+                {
+                    if (frame.position >= _position)
+                    {
+                        _position = _position + frame.duration;
+                        decodedDuration += frame.duration;
+                    }
+                }
+                
+                if (decodedDuration > minDuration)
+                    finished = YES;
+            }
+        }
+        
+        
+        av_packet_unref(packet);
+    }
+    av_packet_unref(packet);
+    av_packet_free(&packet);
+    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+    #ifdef DEBUG
+                NSLog(@"decodePreviewImagesFrames in %.2f ms", linkTime * 1000.0);
+    #endif
     return result;
 }
 

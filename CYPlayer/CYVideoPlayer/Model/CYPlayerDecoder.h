@@ -179,6 +179,8 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 
 - (NSArray *) decodeFrames: (CGFloat) minDuration;
 
+- (NSArray *) decodePreviewImagesFrames: (CGFloat) minDuration;
+
 - (NSArray *) decodeTargetFrames: (CGFloat) minDuration :(CGFloat)targetPos;
 
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
