@@ -63,6 +63,9 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
 }
 
 - (void)CY_updateScreenshot {
+    if (![[NSThread currentThread] isMainThread]) {
+        return;
+    }
     // get scrrenshort
     id appDelegate = [UIApplication sharedApplication].delegate;
     UIWindow *window = [appDelegate valueForKey:@"window"];
@@ -112,6 +115,9 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
     // remove last screenshot
     [self.CY_screenshotImagesM removeLastObject];
     // update screenshotImage
+    if (![[NSThread currentThread] isMainThread]) {
+        return;
+    }
     [self.CY_screenshotView setImage:[self.CY_screenshotImagesM lastObject]];
 }
 
