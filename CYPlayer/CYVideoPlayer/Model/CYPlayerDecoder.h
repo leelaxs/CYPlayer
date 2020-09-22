@@ -160,7 +160,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 @property (readonly, nonatomic) BOOL isNetwork;
 @property (readonly, nonatomic) CGFloat startTime;
 @property (readwrite, nonatomic) BOOL disableDeinterlacing;
-@property (readwrite, nonatomic, strong) CYPlayerDecoderInterruptCallback interruptCallback;
+@property (readwrite, nonatomic, copy) CYPlayerDecoderInterruptCallback interruptCallback;
 @property (readwrite, nonatomic, copy) CYPlayerDecoderDynamicFPS dynamicFPS_Block;
 @property (nonatomic, readwrite, assign) CYVideoDecodeType decodeType;
 

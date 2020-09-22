@@ -1195,8 +1195,9 @@ extern  URLProtocol ff_libsmbclient_protocol;
     
 
     
-//    av_dict_set(&_options, "rtsp_transport", "udp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-//    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
+    av_dict_set(&_options, "rtsp_transport", "udp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
+    av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
+    av_dict_set(&_options, "timeout", "30000000", 0);//设置超时30秒
 //    av_dict_set(&_options, "timeout", NULL, 0);
 //    av_dict_set(&_options, "re", "25", 0);
 //    av_dict_set(&_options, "r", "25", 0);
@@ -2725,7 +2726,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             }
              CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
 #ifdef DEBUG
-            NSLog(@"av_read_frame in %.2f ms", linkTime * 1000.0);
+//            NSLog(@"av_read_frame in %.2f ms", linkTime * 1000.0);
 #endif
             
             dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
@@ -3491,7 +3492,7 @@ error:
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
                 CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
 #ifdef DEBUG
-                NSLog(@"avcodec_send_receive_packet in %.2f ms", linkTime * 1000.0);
+//                NSLog(@"avcodec_send_receive_packet in %.2f ms", linkTime * 1000.0);
 #endif
                 dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
                 
@@ -4153,7 +4154,7 @@ error:
     av_packet_free(&packet);
     CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
     #ifdef DEBUG
-                NSLog(@"decodePreviewImagesFrames in %.2f ms", linkTime * 1000.0);
+//                NSLog(@"decodePreviewImagesFrames in %.2f ms", linkTime * 1000.0);
     #endif
     return result;
 }
@@ -4229,6 +4230,10 @@ error:
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
+static int av_read_frame_time_out = 0;
+
+static CFAbsoluteTime _av_read_frame_time;
+
 static int interrupt_callback(void *ctx)
 {
     if (!ctx)
@@ -4236,7 +4241,22 @@ static int interrupt_callback(void *ctx)
     __unsafe_unretained CYPlayerDecoder *p = (__bridge CYPlayerDecoder *)ctx;
     const BOOL r = [p interruptDecoder];
     if (r) LoggerStream(1, @"DEBUG: INTERRUPT_CALLBACK!");
+//    av_read_frame_time_out++;
+//    if (av_read_frame_time_out > 40) {
+//        av_read_frame_time_out = 0;
+//        return 1;
+//    }
+//    CFAbsoluteTime av_read_frame_time = CFAbsoluteTimeGetCurrent();
+//    if (!_av_read_frame_time) {
+//        _av_read_frame_time = CFAbsoluteTimeGetCurrent();
+//    }
+//    else{
+//        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - _av_read_frame_time);
+//        NSLog(@"_av_read_frame_time  in %.2f ms", linkTime *1000.0);
+//        _av_read_frame_time = CFAbsoluteTimeGetCurrent();
+//    }
     return r;
+
 }
 
 static void my_smbc_get_auth_data_fn (const char *srv,
