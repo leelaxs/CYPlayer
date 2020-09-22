@@ -893,11 +893,11 @@ CYAudioManagerDelegate>
     [self concurrentAsyncDecodeFrames];
     
     __weak typeof(&*self)weakSelf = self;
-    //刮起当前生成图片的进程
-    dispatch_suspend([CYGCDManager sharedManager].generate_preview_images_dispatch_queue);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        dispatch_resume([CYGCDManager sharedManager].generate_preview_images_dispatch_queue);
-    });
+//    //刮起当前生成图片的进程
+//    dispatch_suspend([CYGCDManager sharedManager].generate_preview_images_dispatch_queue);
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        dispatch_resume([CYGCDManager sharedManager].generate_preview_images_dispatch_queue);
+//    });
     
     
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
@@ -1196,11 +1196,20 @@ CYAudioManagerDelegate>
             NSError * error = nil;
             int i = 0;
             CYFFmpegPlayer *strongSelf = weakSelf;
-            while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted &&
+            while ( i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted &&
                    !strongSelf->_interrupted)
                 //                for (int i = 0; i < imagesCount; i++)
             {
                 CYPlayerDecoder *decoder = weakDecoder;
+                if (![decoder.path isEqualToString:weakSelf.decoder.path]) {
+                    if (strongSelf) {
+                        [strongSelf->_generatedPreviewImagesVideoFrames removeAllObjects];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [weakSelf showTitle:@"链接已切换，重新生成预览图"];
+                        });
+                    }
+                    break;;
+                }
                 
                 if (decoder && decoder.validVideo && decoder.isEOF == NO)
                 {
@@ -1238,7 +1247,7 @@ CYAudioManagerDelegate>
                     strongSelf->_generatedPreviewImageInterrupted = YES;
                     break;
                 }
-                sleep(5);
+                sleep(1);
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong CYFFmpegPlayer *strongSelf2 = weakSelf;
