@@ -1247,7 +1247,12 @@ CYAudioManagerDelegate>
                     strongSelf->_generatedPreviewImageInterrupted = YES;
                     break;
                 }
-                sleep(1);
+                if (weakSelf.decoder.fps <= 30) {
+                    sleep(1);
+                }else {
+                    sleep(5);
+                }
+                
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong CYFFmpegPlayer *strongSelf2 = weakSelf;

@@ -977,7 +977,7 @@
 				TargetAttributes = {
 					84B261AC1A46A0AE00C8CAA9 = {
 						CreatedOnToolsVersion = 6.1;
-						DevelopmentTeam = 4Z49MWW88D;
+						DevelopmentTeam = F9N4PL48HY;
 					};
 					84B261C51A46A0AF00C8CAA9 = {
 						CreatedOnToolsVersion = 6.1;
@@ -1287,7 +1287,7 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = "$(inherited)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
-				DEVELOPMENT_TEAM = 4Z49MWW88D;
+				DEVELOPMENT_TEAM = F9N4PL48HY;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1304,7 +1304,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.dental360.doctor;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yellowei.www.-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1318,7 +1318,7 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = "$(inherited)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
-				DEVELOPMENT_TEAM = 4Z49MWW88D;
+				DEVELOPMENT_TEAM = F9N4PL48HY;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1335,7 +1335,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.dental360.doctor;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yellowei.www.-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

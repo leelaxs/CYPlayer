@@ -46,11 +46,8 @@
                           @"smb://192.168.31.217/Downloads/a.avi",
                           @"smb://192.168.31.217/Downloads/9533522808.f4v.mp4",
                           @"smb://192.168.31.217/Downloads/9533522808.f4v.AVI",
-                          @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/22/49/77/34/430105247084544000.mp4",
-                          @"http://dliveshow.oss-cn-shanghai.aliyuncs.com/live/record/dentalink/510825806960820224/2020-08-10-19-26-39_2020-08-10-20-25-51.mp4",
                           @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
                           @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/5/23/8/88/304368212387233792_merge.m4a",
-                        
                           localV,
                           @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
                           @"smb://guest@172.16.9.10/video/test.mp4",
