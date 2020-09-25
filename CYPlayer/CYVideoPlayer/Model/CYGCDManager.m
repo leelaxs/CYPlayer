@@ -17,6 +17,7 @@
     dispatch_once(&onceToken, ^{
         sharedManager = [[CYGCDManager alloc] init];
         sharedManager.av_read_frame_lock = dispatch_semaphore_create(1);//初始化锁
+        sharedManager.decode_preview_images_frames_av_read_frame_lock = dispatch_semaphore_create(1);//初始化锁
         sharedManager.av_send_receive_packet_lock = dispatch_semaphore_create(1);//初始化锁
         sharedManager.swr_context_lock = dispatch_semaphore_create(1);//初始化锁
         sharedManager.sws_context_lock = dispatch_semaphore_create(1);//初始化锁

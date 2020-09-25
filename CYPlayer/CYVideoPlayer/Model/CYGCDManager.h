@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 //高可用接口
 @property (nonatomic, strong) dispatch_semaphore_t av_read_frame_lock;
+@property (nonatomic, strong) dispatch_semaphore_t decode_preview_images_frames_av_read_frame_lock;
 @property (nonatomic, strong) dispatch_semaphore_t av_send_receive_packet_lock;
 @property (nonatomic, strong) dispatch_queue_t    concurrent_decode_queue;
 @property (nonatomic, strong) dispatch_group_t    concurrent_group;

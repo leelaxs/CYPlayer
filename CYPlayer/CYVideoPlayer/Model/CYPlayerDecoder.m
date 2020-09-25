@@ -4107,14 +4107,26 @@ error:
     
     while (!finished && _formatCtx) {
 //        CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
-        dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
-        if (av_read_frame(_formatCtx, packet) < 0) {
-            _isEOF = YES;
-            av_packet_unref(packet);
+        if ([self.path hasPrefix:@"smb://"]) {
+            dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
+            if (av_read_frame(_formatCtx, packet) < 0) {
+                _isEOF = YES;
+                av_packet_unref(packet);
+                dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
+                break;
+            }
             dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
-            break;
+        }else {
+            dispatch_semaphore_wait([CYGCDManager sharedManager].decode_preview_images_frames_av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
+            if (av_read_frame(_formatCtx, packet) < 0) {
+                _isEOF = YES;
+                av_packet_unref(packet);
+                dispatch_semaphore_signal([CYGCDManager sharedManager].decode_preview_images_frames_av_read_frame_lock);//放行
+                break;
+            }
+            dispatch_semaphore_signal([CYGCDManager sharedManager].decode_preview_images_frames_av_read_frame_lock);//放行
         }
-        dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
+        
 //        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
         //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
         

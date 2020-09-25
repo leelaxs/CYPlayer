@@ -1247,11 +1247,11 @@ CYAudioManagerDelegate>
                     strongSelf->_generatedPreviewImageInterrupted = YES;
                     break;
                 }
-                if (weakSelf.decoder.fps <= 30) {
-                    sleep(1);
-                }else {
-                    sleep(5);
-                }
+//                if (weakSelf.decoder.fps >= 25 && weakSelf.decoder.frameWidth >= 1680) {
+//                    sleep(3);
+//                }else {
+//                    sleep(1);
+//                }
                 
             }
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -2369,7 +2369,8 @@ CYAudioManagerDelegate>
                 CGFloat durationTime = curr - cant;
                 if (durationTime >= CYPLAYER_MAX_TIMEOUT * 1000)
                 {
-                    _interrupted = YES;
+//                    _interrupted = YES;
+                    [self _itemPlayFailed];
                     _cantPlayStartTime = 0.0;
                     //                    return;
                 }
