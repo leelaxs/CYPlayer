@@ -13,7 +13,7 @@
 
 
 @implementation CYTest
-
+#ifdef SMBCLIENT_H_INCLUDED
 static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
                                                   const char *srv,
                                                   const char *shr,
@@ -86,6 +86,8 @@ static void my_smbc_get_auth_data_with_context_fn(SMBCCTX *c,
     
     //    avcodec_open2(NULL, NULL, NULL);
 }
+
+#endif
 
 + (void)testGeneratedPreviewImagesWithImagesCount
 {

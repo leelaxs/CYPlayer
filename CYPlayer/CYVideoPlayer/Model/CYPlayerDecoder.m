@@ -357,10 +357,13 @@ static BOOL isNetworkPath (NSString *path)
 }
 
 static int interrupt_callback(void *ctx);
+
+#ifdef SMBCLIENT_H_INCLUDED
 static int my_libsmbc_open( URLContext *h, const char *url, int flags);
 static int my_libsmbc_close( URLContext *h );
 static int my_libsmbc_close2( URLContext *h );
 static int my_libsmbc_connect(URLContext *h);
+#endif
 
 # pragma mark - ///////////////////////////
 
@@ -635,6 +638,7 @@ static int my_libsmbc_connect(URLContext *h);
 
 //MARK: - //////////////Decoder///////////////
 
+#ifdef SMBCLIENT_H_INCLUDED
 typedef struct AVIOInternal {
     URLContext *h;
 } AVIOInternal;
@@ -651,7 +655,7 @@ typedef struct {
 } LIBSMBContext;
 
 extern  URLProtocol ff_libsmbclient_protocol;
-
+#endif
 
 @interface CYPlayerDecoder () {
     
@@ -890,8 +894,10 @@ extern  URLProtocol ff_libsmbclient_protocol;
 {
 //    av_log_set_callback(FFLog);
     //替换ffmpeg的samba protocol的方法
+#ifdef SMBCLIENT_H_INCLUDED
     ff_libsmbclient_protocol.url_open = my_libsmbc_open;
     ff_libsmbclient_protocol.url_close = my_libsmbc_close;
+#endif
     
     avcodec_register_all();
     av_register_all();
@@ -1216,6 +1222,7 @@ extern  URLProtocol ff_libsmbclient_protocol;
     if (( ret = formatCtx->io_open(formatCtx, &formatCtx->pb, [path UTF8String], AVIO_FLAG_READ | formatCtx->avio_flags, &_options)) < 0){
         return cyPlayerErrorOpenFile;
     }
+#ifdef SMBCLIENT_H_INCLUDED
     
     AVIOContext * pb = formatCtx->pb;
     AVIOInternal * internal = pb->opaque;
@@ -1227,6 +1234,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
 //        h->prot->url_open = my_libsmbc_open;
 //        h->prot->url_close = my_libsmbc_close;
     }
+#endif
+    
     if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"]) {
         // There is total different meaning for 'timeout' option in rtmp
         av_dict_set(&_options, "timeout", NULL, 0);
@@ -4271,6 +4280,8 @@ static int interrupt_callback(void *ctx)
 
 }
 
+
+#ifdef SMBCLIENT_H_INCLUDED
 static void my_smbc_get_auth_data_fn (const char *srv,
                                       const char *shr,
                                       char *wg, int wglen,
@@ -4279,6 +4290,7 @@ static void my_smbc_get_auth_data_fn (const char *srv,
 {
     
 }
+
 
 static CFAbsoluteTime _smb_last_link_time;//用于samba的session超时计算
 
@@ -4422,7 +4434,7 @@ fail2:
     return ret;
 }
 
-
+#endif
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
