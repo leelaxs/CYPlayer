@@ -8,7 +8,7 @@ target 'CYPlayer' do
   # use_frameworks!
 
 #  pod 'CYFFmpeg', :path => '../CYFFmpeg'
-  pod 'CYFFmpeg','0.1.3'
+  pod 'CYFFmpeg','0.2.1'
 #  pod 'KxSMB_Pod', :path => './MyPods/KxSMB_Pod'
   pod 'Masonry'
   pod 'NSLogger'

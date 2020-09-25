@@ -638,11 +638,12 @@ static int my_libsmbc_connect(URLContext *h);
 
 //MARK: - //////////////Decoder///////////////
 
-#ifdef SMBCLIENT_H_INCLUDED
+
 typedef struct AVIOInternal {
     URLContext *h;
 } AVIOInternal;
 
+#ifdef SMBCLIENT_H_INCLUDED
 typedef struct {
     const AVClass *class;
     SMBCCTX *ctx;
@@ -1222,7 +1223,6 @@ extern  URLProtocol ff_libsmbclient_protocol;
     if (( ret = formatCtx->io_open(formatCtx, &formatCtx->pb, [path UTF8String], AVIO_FLAG_READ | formatCtx->avio_flags, &_options)) < 0){
         return cyPlayerErrorOpenFile;
     }
-#ifdef SMBCLIENT_H_INCLUDED
     
     AVIOContext * pb = formatCtx->pb;
     AVIOInternal * internal = pb->opaque;
@@ -1234,7 +1234,6 @@ extern  URLProtocol ff_libsmbclient_protocol;
 //        h->prot->url_open = my_libsmbc_open;
 //        h->prot->url_close = my_libsmbc_close;
     }
-#endif
     
     if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"]) {
         // There is total different meaning for 'timeout' option in rtmp
