@@ -6,21 +6,24 @@ PODS:
   - NSLogger/ObjC (1.9.7)
 
 DEPENDENCIES:
-  - CYFFmpeg (= 0.2.1)
+  - CYFFmpeg (from `../CYFFmpeg`)
   - Masonry
   - NSLogger
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
-    - CYFFmpeg
     - Masonry
     - NSLogger
+
+EXTERNAL SOURCES:
+  CYFFmpeg:
+    :path: "../CYFFmpeg"
 
 SPEC CHECKSUMS:
   CYFFmpeg: 2c06cda14fcfd95d39fa7473386b2aaae022ebf7
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   NSLogger: cf3013a4fba189f631f07e6c3d5b8ce2b209654b
 
-PODFILE CHECKSUM: 2ce13a7e1c63999edd948607eed5c69561ac26f8
+PODFILE CHECKSUM: 68716b266d4aed45060fc68cae6a1e55105d50e0
 
-COCOAPODS: 1.9.0.beta.2
+COCOAPODS: 1.9.3
