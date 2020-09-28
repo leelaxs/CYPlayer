@@ -1203,8 +1203,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
 
     
     av_dict_set(&_options, "rtsp_transport", "udp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-    av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
-    av_dict_set(&_options, "timeout", "30000000", 0);//设置超时30秒
+//    av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
+//    av_dict_set(&_options, "timeout", "30000000", 0);//设置超时30秒
 //    av_dict_set(&_options, "timeout", NULL, 0);
 //    av_dict_set(&_options, "re", "25", 0);
 //    av_dict_set(&_options, "r", "25", 0);
@@ -1219,6 +1219,7 @@ extern  URLProtocol ff_libsmbclient_protocol;
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
+//#ifdef aaa
     int ret;
     if (( ret = formatCtx->io_open(formatCtx, &formatCtx->pb, [path UTF8String], AVIO_FLAG_READ | formatCtx->avio_flags, &_options)) < 0){
         return cyPlayerErrorOpenFile;
@@ -1240,7 +1241,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
         av_dict_set(&_options, "timeout", NULL, 0);
     }
     
-
+//#endif
+    
     //avformat_open_input-->init_input
     //init_input-->(io_open:io_open_default)
     //io_open_default-->ffio_open_whitelist-->ffurl_open_whitelist
@@ -1252,7 +1254,7 @@ extern  URLProtocol ff_libsmbclient_protocol;
             avformat_free_context(formatCtx);
         return cyPlayerErrorOpenFile;
     }
-    
+
     
     
     if (avformat_find_stream_info(formatCtx, NULL) < 0) {
