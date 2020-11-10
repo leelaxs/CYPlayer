@@ -63,12 +63,16 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
 }
 
 - (void)CY_updateScreenshot {
+    
     if (![[NSThread currentThread] isMainThread]) {
         return;
     }
     // get scrrenshort
     id appDelegate = [UIApplication sharedApplication].delegate;
     UIWindow *window = [appDelegate valueForKey:@"window"];
+    if (CGRectIsEmpty(window.bounds)) {
+        return;
+    }
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(window.frame.size.width, window.frame.size.height), YES, 0);
     [window.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -222,7 +226,7 @@ static UINavigationControllerOperation _navOperation;
         !self.isObserver ) [self CY_navSettings];
     
     // push update screenshot
-    [self CY_updateScreenshot];
+//    [self CY_updateScreenshot];
     // call origin method
     [self CY_pushViewController:viewController animated:animated];
 }
