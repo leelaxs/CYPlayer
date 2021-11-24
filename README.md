@@ -5,6 +5,16 @@
 pod 'CYPlayer'
 ```
 
+### Feature
+```
+1.支持动态帧率控制，适配各种性能的机型，最高支持1080p@60fps;
+2.动态内存控制，适配小内存的iPhone，防止在老设备crash；
+3.支持RTMP和HLS，Master分支暂不支持Samba(CYFFmpeg未优化好);
+4.拿来可用，带控制交互界面，可自定义；
+5.音频采用Sonic优化，支持倍速播放；
+6.解码核心FFmpeg3.4，x264。
+```
+
 
 ### Sample
 
@@ -61,9 +71,13 @@ vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     };
 ```
 
-##注意:
+## 注意:
 
-```tex
-pod安装CYPlayer后,如果遇到xcode无法调试的问题，请到xocde工程Pod目录下CYPlayer找到"Support Files/CYPlayer.xcconfig"文件, 删除OTHER_LDFLAGS中的-read_only_relocs suppress, 尝试真机能否运行
+```
+pod安装CYPlayer后,如果遇到xcode无法调试的问题
+
+请到xocde工程Pod目录下CYPlayer找到"Support Files/CYPlayer.xcconfig"文件
+
+删除OTHER_LDFLAGS中的-read_only_relocs suppress, 尝试真机能否运行
 ```
 
