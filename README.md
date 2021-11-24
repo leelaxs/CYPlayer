@@ -1,11 +1,13 @@
 # CYPlayer
 
-```ruby
-#podfile添加如下行
+这款播放器和程序员本身一样，默默地在发光！
+
+## 通过cocoapods安装播放器到项目
+```
 pod 'CYPlayer'
 ```
 
-### Feature
+## 播放器基本特性
 ```
 1.支持动态帧率控制，适配各种性能的机型，最高支持1080p@60fps;
 2.动态内存控制，适配小内存的iPhone，防止在老设备crash；
@@ -16,13 +18,13 @@ pod 'CYPlayer'
 ```
 
 
-### Sample
+## 示例动图
 
 ![prew-1.gif](https://raw.githubusercontent.com/yellowei/CYPlayer/master/prew-1.gif)
 
 ![prew-2.gif](https://raw.githubusercontent.com/yellowei/CYPlayer/master/prew-2.gif)
 
-### How To Use
+## 简单的代码
 ```Objective-C
 
     //创建实例
@@ -79,7 +81,7 @@ pod 'CYPlayer'
     };
 ```
 
-## 注意:
+## 注意
 
 ```
 pod安装CYPlayer后,如果遇到xcode无法调试的问题
