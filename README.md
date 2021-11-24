@@ -28,6 +28,7 @@ pod 'CYPlayer'
     //创建实例
     CYFFmpegPlayer * vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     [vc settingPlayer:^(CYVideoPlayerSettings *settings) {
+        //设置可选的清晰度
         settings.definitionTypes = CYFFmpegPlayerDefinitionLLD | CYFFmpegPlayerDefinitionLHD | CYFFmpegPlayerDefinitionLSD | CYFFmpegPlayerDefinitionLUD;
         settings.enableSelections = YES;
         settings.setCurrentSelectionsIndex = ^NSInteger{
