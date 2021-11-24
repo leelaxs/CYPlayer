@@ -9,7 +9,7 @@ pod 'CYPlayer'
 ```
 1.支持动态帧率控制，适配各种性能的机型，最高支持1080p@60fps;
 2.动态内存控制，适配小内存的iPhone，防止在老设备crash；
-3.支持RTMP和HLS，Master分支暂不支持Samba(CYFFmpeg未优化好);
+3.支持RTMP和HLS，轻度支持Samba（CYFFmpeg编入了Samba库）;
 4.拿来可用，带控制交互界面，可自定义；
 5.音频采用Sonic优化，支持倍速播放；
 6.解码核心FFmpeg3.4，x264。
