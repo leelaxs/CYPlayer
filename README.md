@@ -24,7 +24,9 @@ pod 'CYPlayer'
 
 ### How To Use
 ```Objective-C
-vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
+
+    //创建实例
+    CYFFmpegPlayer * vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     [vc settingPlayer:^(CYVideoPlayerSettings *settings) {
         settings.definitionTypes = CYFFmpegPlayerDefinitionLLD | CYFFmpegPlayerDefinitionLHD | CYFFmpegPlayerDefinitionLSD | CYFFmpegPlayerDefinitionLUD;
         settings.enableSelections = YES;
@@ -35,13 +37,18 @@ vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
             return @"http:/xtoai.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
         };
         settings.useHWDecompressor = YES;
-//        settings.enableProgressControl = NO;
+        //settings.enableProgressControl = NO;
     }];
+    //设置代理
     vc.delegate = self;
+    //开启自动播放
     vc.autoplay = YES;
+    //开启生成预览图功能
     vc.generatPreviewImages = YES;
+    //将播放器加到视图
     [contentView addSubview:vc.view];
     
+    //通过masonry设置动态适配（约束，autolayout）
     [vc.view mas_makeConstraints:^(MASConstraintMaker *make) {
         if (kiPad)
         {
