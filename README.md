@@ -150,7 +150,11 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 ## 注意
 
 ```
-CYFFmpeg0.3.1开始, 模拟器取消了i386, 不再需要设置"OTHER_LDFLAGS"的"-read_only_relocs suppress"
+因为新版Xcode不再提供32位模拟器
+
+CYFFmpeg0.3.1开始, 编译架构取消了i386, 仍然支持x86_64模拟器和所有真机
+
+不再需要设置"OTHER_LDFLAGS"的"-read_only_relocs suppress"
 ```
 
 
