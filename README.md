@@ -150,6 +150,13 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 ## 注意
 
 ```
+CYFFmpeg0.3.1开始, 模拟器取消了i386, 不再需要设置"OTHER_LDFLAGS"的"-read_only_relocs suppress"
+```
+
+
+基于CYFFmpeg0.2.2版本以及之前版本的需要做以下事情
+
+```
 pod安装CYPlayer后,如果遇到xcode无法调试的问题
 
 请到xocde工程Pod目录下CYPlayer找到"Support Files/CYPlayer.xcconfig"文件
