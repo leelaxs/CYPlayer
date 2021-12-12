@@ -30,30 +30,31 @@
         self.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag: 0];
         NSString * localV = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"mp4"];
         _remoteMovies = @[
-                          @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
-                          @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
-                          @"rtmp://live.hkstv.hk.lxdns.com/live/hks",
-                          @"http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8",
-                          @"http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8",
-                          @"http://ivi.bupt.edu.cn/hls/cctv3hd.m3u8",
-                          @"http://ivi.bupt.edu.cn/hls/cctv5hd.m3u8",
-                          @"http://ivi.bupt.edu.cn/hls/cctv5phd.m3u8",
-                          @"http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8",
-                          @"http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8",
-                          @"rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov",
-                          @"rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp",
-                          @"rtmp://rtmp.yayiguanjia.com/AppName/StreamName?auth_key=1533608675-0-0-4708840ac7649d449d643a25156f7be7",
-                          @"smb://192.168.31.217/Downloads/a.avi",
-                          @"smb://192.168.31.217/Downloads/9533522808.f4v.mp4",
-                          @"smb://192.168.31.217/Downloads/9533522808.f4v.AVI",
-                          @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
-                          @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/5/23/8/88/304368212387233792_merge.m4a",
-                          localV,
-                          @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
-                          @"smb://guest@172.16.9.10/video/test.mp4",
-                          @"smb://WORKGROUP;yellowei:1314-Wamq@192.168.31.170/Movie/Marval Movie/04 Thor 2011 BluRay 720p DTS x264-MgB [ETRG].mkv",
-                          @"rtmp://play2.yayi360.com/dentalink-vod/530504197284757504_lld?auth_key=1601306667-0-0-79a7fb3d8c2e075ce6843cc7d310f18f"
-                          ];
+            localV,
+            @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
+            @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
+            @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
+            @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
+            @"rtmp://live.hkstv.hk.lxdns.com/live/hks",
+            @"http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8",
+            @"http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8",
+            @"http://ivi.bupt.edu.cn/hls/cctv3hd.m3u8",
+            @"http://ivi.bupt.edu.cn/hls/cctv5hd.m3u8",
+            @"http://ivi.bupt.edu.cn/hls/cctv5phd.m3u8",
+            @"http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8",
+            @"http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8",
+            @"rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov",
+            @"rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp",
+            @"rtmp://rtmp.yayiguanjia.com/AppName/StreamName?auth_key=1533608675-0-0-4708840ac7649d449d643a25156f7be7",
+            @"smb://192.168.31.217/Downloads/a.avi",
+            @"smb://192.168.31.217/Downloads/9533522808.f4v.mp4",
+            @"smb://192.168.31.217/Downloads/9533522808.f4v.AVI",
+            @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
+            @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/5/23/8/88/304368212387233792_merge.m4a",
+            @"smb://guest@172.16.9.10/video/test.mp4",
+            @"smb://WORKGROUP;yellowei:1314-Wamq@192.168.31.170/Movie/Marval Movie/04 Thor 2011 BluRay 720p DTS x264-MgB [ETRG].mkv",
+            @"rtmp://play2.yayi360.com/dentalink-vod/530504197284757504_lld?auth_key=1601306667-0-0-79a7fb3d8c2e075ce6843cc7d310f18f"
+        ];
         
     }
     return self;
@@ -78,7 +79,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    
 #ifdef DEBUG_AUTOPLAY
     [self performSelector:@selector(launchDebugTest) withObject:nil afterDelay:0.5];
 #endif
@@ -92,7 +93,7 @@
 
 - (void)didReceiveMemoryWarning
 {
-    [super didReceiveMemoryWarning];    
+    [super didReceiveMemoryWarning];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -104,7 +105,7 @@
 {
     [super viewWillAppear:animated];
     
-//    [self reloadMovies];
+    //    [self reloadMovies];
     [self.tableView reloadData];
 }
 
@@ -155,14 +156,14 @@
             }
         }
     }
-
+    
     // Add all the movies present in the app bundle.
     NSBundle *bundle = [NSBundle mainBundle];
     [ma addObjectsFromArray:[bundle pathsForResourcesOfType:@"mp4" inDirectory:@"SampleMovies"]];
     [ma addObjectsFromArray:[bundle pathsForResourcesOfType:@"mov" inDirectory:@"SampleMovies"]];
     [ma addObjectsFromArray:[bundle pathsForResourcesOfType:@"m4v" inDirectory:@"SampleMovies"]];
     [ma addObjectsFromArray:[bundle pathsForResourcesOfType:@"wav" inDirectory:@"SampleMovies"]];
-
+    
     [ma sortedArrayUsingSelector:@selector(compare:)];
     
     _localMovies = [ma copy];
@@ -213,7 +214,7 @@
         
         path = _localMovies[indexPath.row];
     }
-
+    
     cell.textLabel.text = path.lastPathComponent;
     return cell;
 }
@@ -231,7 +232,7 @@
         path = _remoteMovies[indexPath.row];
         
     } else {
-
+        
         if (indexPath.row >= _localMovies.count) return;
         path = _localMovies[indexPath.row];
     }
@@ -248,15 +249,15 @@
     //parameters[CYPlayerParameterMinBufferedDuration] = @(0.0f);
     //parameters[CYPlayerParameterMaxBufferedDuration] = @(0.0f);
     
-//    CYPlayerViewController *vc = [CYPlayerViewController movieViewControllerWithContentPath:path
-//                                                                               parameters:parameters];
+    //    CYPlayerViewController *vc = [CYPlayerViewController movieViewControllerWithContentPath:path
+    //                                                                               parameters:parameters];
     CYFFmpegViewController * vc = [[CYFFmpegViewController alloc] init];
     vc.path = path;
     [self.navigationController pushViewController:vc animated:YES];
-//    [self presentViewController:vc animated:YES completion:nil];
+    //    [self presentViewController:vc animated:YES completion:nil];
     //[self.navigationController pushViewController:vc animated:YES];
-
-//    LoggerApp(1, @"Playing a movie: %@", path);
+    
+    //    LoggerApp(1, @"Playing a movie: %@", path);
 }
 
 @end
