@@ -12,12 +12,72 @@ pod 'CYPlayer'
 
 ## 播放器基本特性
 
-- [x] 1.支持动态帧率控制，适配各种性能的机型，最高支持1080p@60fps;
-- [x] 2.动态内存控制，适配小内存的iPhone，防止在老设备crash；
-- [x] 3.支持RTMP和HLS，轻度支持Samba（CYFFmpeg编入了Samba库）;
-- [x] 4.拿来可用，带控制交互界面，可自定义；
-- [x] 5.音频采用Sonic优化，支持倍速播放；
-- [x] 6.解码核心FFmpeg3.4，x264。
+- [x] 支持动态帧率控制，适配各种性能的机型，随系统性能动态调节解码帧率;
+
+- [x] 动态内存控制，适配小内存的iPhone，防止在老设备crash；
+
+- [x] 基于Masonry的AutoLayout；
+
+- [x] 拿来可用，带控制交互界面，可自定义, 默认提供了变速播放功能, 清晰度选择功能；
+
+- [x] 音频采用Sonic优化，支持倍速播放；
+
+- [x] 基于CYFFMpeg动态库；
+
+- [x] 支持x86_64模拟器调试和armv7/arm64真机调试；
+
+- [x] Enable Bitcode=YES；
+
+- [x] 开箱即用。
+
+
+## 关于解码动态库CYFFmpeg
+
+- [x] CYFFmpeg可以通过CocoaPods进行安装；
+
+- [x] 构建为动态库版本；
+
+- [x] 支持Samba协议，多线程优化；
+
+- [x] 支持Http、Https协议；
+
+- [x] 支持RTMP、HLS、RTSP协议；
+
+- [x] 基于ffmpeg 3.4.2；
+
+- [x] 支持ffmpeg命令行方式调用；
+
+```
+//ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
+char* a[] = {
+    "ffmpeg",
+    "-ss",
+    timeInterval,
+    "-i",
+    movie,
+    "-f",
+    "image2",
+    "-r",
+    "25",
+    "-vframes",
+    "1",
+    outPic
+};
+//加锁
+dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);
+int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
+dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
+```
+
+- [x] 支持x86_64模拟器、armv7/arm64真机运行；
+
+- [x] Enable Bitcode=YES；
+
+- [x] 开箱即用。
+
+
+[CYFFmpeg-基于ffmpeg的iOS动态库](https://github.com/yellowei/CYFFmpeg)
+
 
 
 
@@ -96,19 +156,6 @@ pod安装CYPlayer后,如果遇到xcode无法调试的问题
 
 删除OTHER_LDFLAGS中的-read_only_relocs suppress, 尝试真机能否运行
 ```
-
-
-
-## 关于解码动态库CYFFmpeg
-
-- [x] CYFFmpeg可以通过CocoaPods进行安装
-- [x] 构建为动态库版本
-- [x] 支持Samba协议，线程优化
-- [x] 基于ffmpeg 3.4  
-
-
-[CYFFmpeg-基于ffmpeg的iOS动态库](https://github.com/yellowei/CYFFmpeg)
-
 
 
 ## 相关阅读
