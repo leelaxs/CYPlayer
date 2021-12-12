@@ -47,7 +47,7 @@ pod 'CYPlayer'
 
 - [x] 支持ffmpeg命令行方式调用；
 
-```
+```objective-c
 //ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
 char* a[] = {
     "ffmpeg",
