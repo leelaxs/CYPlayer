@@ -67,11 +67,11 @@ int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
 dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 ```
 
-- [x] 支持x86_64模拟器、armv7/arm64真机运行；
+- [x] ✅ 支持x86_64模拟器、armv7/arm64真机运行；
 
-- [x] Enable Bitcode=YES；
+- [x] ✅ Enable Bitcode=YES；
 
-- [x] 开箱即用。
+- [x] ✅ 开箱即用。
 
 
 [CYFFmpeg-基于ffmpeg的iOS动态库](https://github.com/yellowei/CYFFmpeg)
