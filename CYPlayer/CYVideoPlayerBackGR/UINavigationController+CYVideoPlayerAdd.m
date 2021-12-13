@@ -180,8 +180,11 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
 // App launching
 + (void)CY_addscreenshotImageViewToWindow {
     UIWindow *window = [(id)[UIApplication sharedApplication].delegate valueForKey:@"window"];
-    NSAssert(window, @"Window was not found and cannot continue!");
-    [window insertSubview:self.CY_screenshotView atIndex:0];
+    if (window != nil) {
+        NSAssert(window, @"Window was not found and cannot continue!");
+        [window insertSubview:self.CY_screenshotView atIndex:0];
+    }
+    
 }
 
 - (void)CY_navSettings {

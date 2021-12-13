@@ -17,16 +17,14 @@ s.dependency 'Masonry'
 s.dependency 'CYFFmpeg'
 
 s.user_target_xcconfig = {     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"'
 }
 
 
 s.pod_target_xcconfig = {     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
                             'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' ,
-                            'OTHER_LDFLAGS'            => '$(inherited) -undefined dynamic_lookup -ObjC',
-                              'ENABLE_BITCODE'           => 'YES',
-                              'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+                            'OTHER_LDFLAGS'            => '$(inherited) -ObjC',
+                              'ENABLE_BITCODE'           => 'YES'
 }
 
 
@@ -108,6 +106,7 @@ sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m,mm,cpp}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
 sss.dependency 'CYPlayer/CYVideoPlayer/Resource'
 sss.dependency 'CYFFmpeg'
+sss.libraries = "c++"
 end
 
 ss.subspec 'Resource' do |sss|
