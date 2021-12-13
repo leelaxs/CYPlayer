@@ -10,40 +10,40 @@ pod 'CYPlayer'
 
 ## 播放器基本特性
 
-- [x] 支持动态帧率控制，适配各种性能的机型，随系统性能动态调节解码帧率;
+- [x] ✅ 支持动态帧率控制，适配各种性能的机型，随系统性能动态调节解码帧率;
 
-- [x] 动态内存控制，适配小内存的iPhone，防止在老设备crash；
+- [x] ✅ 动态内存控制，适配小内存的iPhone，防止在老设备crash；
 
-- [x] 基于Masonry的AutoLayout；
+- [x] ✅ 基于Masonry的AutoLayout；
 
-- [x] 拿来可用，带控制交互界面，可自定义, 默认提供了变速播放功能, 清晰度选择功能；
+- [x] ✅ 拿来可用，带控制交互界面，可自定义, 默认提供了变速播放功能, 清晰度选择功能；
 
-- [x] 音频采用Sonic优化，支持倍速播放；
+- [x] ✅ 音频采用Sonic优化，支持倍速播放；
 
-- [x] 基于CYFFMpeg动态库；
+- [x] ✅ 基于CYFFMpeg动态库；
 
-- [x] 支持x86_64模拟器调试和armv7/arm64真机调试；
+- [x] ✅ 支持x86_64模拟器调试和armv7/arm64真机调试；
 
-- [x] Enable Bitcode=YES；
+- [x] ✅ Enable Bitcode=YES；
 
-- [x] 开箱即用。
+- [x] ✅ 开箱即用。
 
 
 ## 关于解码动态库CYFFmpeg
 
-- [x] CYFFmpeg可以通过CocoaPods进行安装；
+- [x] ✅ CYFFmpeg可以通过CocoaPods进行安装；
 
-- [x] 构建为动态库版本；
+- [x] ✅ 构建为动态库版本；
 
-- [x] 支持Samba协议，多线程优化；
+- [x] ✅ 支持Samba协议，多线程优化；
 
-- [x] 支持Http、Https协议；
+- [x] ✅ 支持Http、Https(CYFFmpeg 0.3.1)协议；
 
-- [x] 支持RTMP、HLS、RTSP协议；
+- [x] ✅ 支持RTMP、HLS、RTSP协议；
 
-- [x] 基于ffmpeg 3.4.2；
+- [x] ✅ 基于ffmpeg 3.4.2；
 
-- [x] 支持ffmpeg命令行方式调用；
+- [x] ✅ 支持ffmpeg命令行方式调用；
 
 ```objective-c
 //ffmpeg -i Downloads.mp4 -r 1 -ss 00:20 -vframes 1 %3d.jpg
