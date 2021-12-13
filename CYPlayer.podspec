@@ -21,10 +21,12 @@ s.user_target_xcconfig = {     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlay
 }
 
 
-s.pod_target_xcconfig = {     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' ,
-                            'OTHER_LDFLAGS'            => '$(inherited) -ObjC',
-                              'ENABLE_BITCODE'           => 'YES'
+s.pod_target_xcconfig = {
+    'VALID_ARCHS' => 'arm64 armv7 x86_64',
+    'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
+    'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' ,
+    'OTHER_LDFLAGS'            => '$(inherited) -ObjC',
+    'ENABLE_BITCODE'           => 'YES'
 }
 
 
