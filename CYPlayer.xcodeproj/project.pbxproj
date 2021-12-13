@@ -977,7 +977,7 @@
 				TargetAttributes = {
 					84B261AC1A46A0AE00C8CAA9 = {
 						CreatedOnToolsVersion = 6.1;
-						DevelopmentTeam = F9N4PL48HY;
+						DevelopmentTeam = 3TP4665PF2;
 					};
 					84B261C51A46A0AF00C8CAA9 = {
 						CreatedOnToolsVersion = 6.1;
@@ -1290,8 +1290,8 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = "$(inherited)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
-				DEVELOPMENT_TEAM = F9N4PL48HY;
-				ENABLE_BITCODE = NO;
+				DEVELOPMENT_TEAM = 3TP4665PF2;
+				ENABLE_BITCODE = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1322,7 +1322,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				DEVELOPMENT_TEAM = F9N4PL48HY;
-				ENABLE_BITCODE = NO;
+				ENABLE_BITCODE = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",

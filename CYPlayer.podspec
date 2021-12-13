@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "2.6.1"
+s.version      = "3.0.1"
 s.summary      = 'A iOS video player, using AVPlayer&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg'
 s.description  = 'A iOS video player, using AVFoundation&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -25,7 +25,7 @@ s.user_target_xcconfig = {     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlay
 s.pod_target_xcconfig = {     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
                             'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' ,
                             'OTHER_LDFLAGS'            => '$(inherited) -undefined dynamic_lookup -ObjC',
-                              'ENABLE_BITCODE'           => 'NO',
+                              'ENABLE_BITCODE'           => 'YES',
                               'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
 }
 
