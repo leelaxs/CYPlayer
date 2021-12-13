@@ -8,6 +8,8 @@
 pod 'CYPlayer'
 ```
 
+[示例 - https://github.com/yellowei/TestCYPlayer](https://github.com/yellowei/TestCYPlayer)
+
 ## 播放器基本特性
 
 - [x] ✅ 支持动态帧率控制，适配各种性能的机型，随系统性能动态调节解码帧率;
