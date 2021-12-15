@@ -1,5 +1,7 @@
 # CYPlayer
 
+![Logo](https://raw.githubusercontent.com/yellowei/CYPlayer/master/icon-2.png)
+
 和程序员本身一样，都在默默地发光！
 
 ## 通过cocoapods安装播放器到项目
