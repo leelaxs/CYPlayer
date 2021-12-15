@@ -92,9 +92,9 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 ## 示例动图
 
 
-![prew-1.gif](https://raw.githubusercontent.com/yellowei/CYPlayer/master/prew-1.gif)
+![prew-1.gif](https://raw.githubusercontent.com/yellowei/CYPlayer/master/prew-1.png)
 
-![prew-2.gif](https://raw.githubusercontent.com/yellowei/CYPlayer/master/prew-2.gif)
+![prew-2.gif](https://raw.githubusercontent.com/yellowei/CYPlayer/master/prew-2.png)
 
 
 ## 简单的代码
