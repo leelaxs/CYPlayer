@@ -1,6 +1,6 @@
 # CYPlayer
 
-![Logo](https://raw.githubusercontent.com/yellowei/CYPlayer/master/icon-2.png)     ![ffmpeg](https://raw.githubusercontent.com/yellowei/CYPlayer/master/ffmpeg_logo.jpg)
+![Logo](https://raw.githubusercontent.com/yellowei/CYPlayer/master/icon-2.png)     ![ffmpeg](https://raw.githubusercontent.com/yellowei/CYPlayer/master/ffmpeg_logo.png)
 
 和程序员本身一样，都在默默地发光！
 
