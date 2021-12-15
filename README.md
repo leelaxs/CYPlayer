@@ -10,9 +10,9 @@ pod 'CYPlayer'
 
 ### demo
 
-[示例 - https://github.com/yellowei/TestCYPlayer](https://github.com/yellowei/TestCYPlayer)
+[OC示例 - https://github.com/yellowei/TestCYPlayer](https://github.com/yellowei/TestCYPlayer)
 
-[示例 - https://github.com/yellowei/TestCYPlayerSwift](https://github.com/yellowei/TestCYPlayerSwift)
+[Swift示例 - https://github.com/yellowei/TestCYPlayerSwift](https://github.com/yellowei/TestCYPlayerSwift)
 
 
 
