@@ -139,7 +139,7 @@ ViewController.m
     }];
 
     vc1.autoplay = YES;
-    vc1.generatPreviewImages = NO;
+    vc1.generatPreviewImages = NO;//是否生成预览图片
     [self.contentView addSubview:vc1.view];
     //播放器视图添加到父视图之后,一定要设置播放器视图的frame,不然会导致opengl无法渲染以致播放失败
     [vc1.view mas_makeConstraints:^(MASConstraintMaker *make) {
