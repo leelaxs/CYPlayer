@@ -206,7 +206,7 @@ AppDelegate.m
 
 
 Podfile中需要加入"use_frameworks!"
-```
+```ruby
 #ruby
 # Uncomment the next line to define a global platform for your project
 source 'https://github.com/CocoaPods/Specs.git'
