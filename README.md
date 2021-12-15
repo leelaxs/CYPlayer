@@ -91,6 +91,7 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 
 ## 简单的代码
 
+ViewController.m
 ```Objective-C
 
 #import "ViewController.h"
@@ -154,7 +155,42 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 }
 
 
+# pragma mark - 系统横竖屏切换调用
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    if (size.width > size.height)
+    {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.top.bottom.equalTo(@(0));
+            make.left.equalTo(@(0));
+            make.right.equalTo(@(0));
+        }];
+    }
+    else
+    {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.center.offset(0);
+            make.leading.trailing.offset(0);
+            make.height.equalTo(self.contentView.mas_width).multipliedBy(9.0 / 16.0);
+        }];
+    }
+}
+
+
 @end
+
+```
+
+开启自动横竖屏切换需在AppDelegate中添加如下方法
+AppDelegate.m
+```Objective-C
+
+-(UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window{
+
+    return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskLandscapeRight | UIInterfaceOrientationPortraitUpsideDown | UIInterfaceOrientationLandscapeLeft;
+}
+
 ```
 
 ## 注意
