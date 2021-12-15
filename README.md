@@ -8,7 +8,13 @@
 pod 'CYPlayer'
 ```
 
+### demo
+
 [示例 - https://github.com/yellowei/TestCYPlayer](https://github.com/yellowei/TestCYPlayer)
+
+[示例 - https://github.com/yellowei/TestCYPlayerSwift](https://github.com/yellowei/TestCYPlayerSwift)
+
+
 
 ## 播放器基本特性
 
@@ -91,7 +97,10 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 
 ## 简单的代码
 
+### Objective-C中的使用
+
 ViewController.m
+
 ```Objective-C
 
 #import "ViewController.h"
@@ -189,6 +198,112 @@ AppDelegate.m
 -(UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window{
 
     return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskLandscapeRight | UIInterfaceOrientationPortraitUpsideDown | UIInterfaceOrientationLandscapeLeft;
+}
+
+```
+
+### Swift中的使用
+
+
+Podfile中需要加入"use_frameworks!"
+```
+#ruby
+# Uncomment the next line to define a global platform for your project
+source 'https://github.com/CocoaPods/Specs.git'
+platform :ios, '8.0'
+
+target 'TestCYPlayer' do
+  # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
+    use_frameworks!
+
+    pod 'CYPlayer'
+end
+
+```
+
+ViewController.swift
+
+```swift
+
+import UIKit
+import CYPlayer
+import Masonry
+
+class ViewController: UIViewController {
+    var contentView : UIView?
+    var player : CYFFmpegPlayer?
+    
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        //创建cententview
+        self.contentView = UIView.init(frame: CGRect.init(x: 0, y: 0, width: 0, height: 0))
+        self.view.addSubview(self.contentView!)
+        self.contentView?.mas_makeConstraints({ (make) in
+            make?.leading.trailing().offset()(0)
+            make?.center.offset()(0)
+            make?.height.equalTo()(contentView?.mas_width)?.multipliedBy()(9.0 / 16.0)
+        })
+        
+        //初始化播放器
+        player  = CYFFmpegPlayer.movieView(withContentPath: "https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8", parameters: nil) as? CYFFmpegPlayer
+        
+        
+        let definition =  CYFFmpegPlayerDefinitionType.LHD.rawValue | CYFFmpegPlayerDefinitionType.LLD.rawValue | CYFFmpegPlayerDefinitionType.LSD.rawValue | CYFFmpegPlayerDefinitionType.LUD.rawValue
+        player?.settingPlayer({ (settings) in
+            settings?.definitionTypes = CYFFmpegPlayerDefinitionType.init(rawValue: definition)!
+            settings?.enableSelections = true
+            settings?.setCurrentSelectionsIndex =  { () -> Int in
+                return 3
+            }
+            settings?.nextAutoPlaySelectionsPath = { () -> String in
+                return "https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8"
+            }
+        })
+        
+        player?.isAutoplay = true
+        player?.generatPreviewImages = true
+        self.contentView?.addSubview((player?.view)!)
+        //播放器视图添加到父视图之后,一定要设置播放器视图的frame,不然会导致opengl无法渲染以致播放失败
+        player?.view.mas_makeConstraints({ (make) in
+            make?.center.offset()(0)
+            make?.top.bottom().offset()(0)
+            make?.width.equalTo()(player?.view.mas_height)?.multipliedBy()(16.0 / 9.0)
+        })
+    }
+
+
+    deinit {
+        player?.stop()
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        if size.width > size.height {
+            
+            contentView?.mas_remakeConstraints({ (make) in
+                make?.top.bottom().equalTo()(0)
+                make?.left.right().equalTo()(0)
+            })
+        } else {
+            contentView?.mas_remakeConstraints({ (make) in
+                make?.leading.trailing().offset()(0)
+                make?.center.offset()(0)
+                make?.height.equalTo()(contentView?.mas_width)?.multipliedBy()(9.0 / 16.0)
+            })
+        }
+    }
+}
+```
+
+开启自动横竖屏切换需在AppDelegate中添加如下方法
+
+AppDelegate.swift
+
+```swift
+
+func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+    let mask = UIInterfaceOrientationMask.portrait.rawValue | UIInterfaceOrientationMask.landscapeLeft.rawValue | UIInterfaceOrientationMask.landscapeRight.rawValue | UIInterfaceOrientationMask.portraitUpsideDown.rawValue
+    return UIInterfaceOrientationMask.init(rawValue: mask)
 }
 
 ```
