@@ -1690,7 +1690,7 @@ CYAudioManagerDelegate>
     __weak CYFFmpegPlayer *weakSelf = self;
     __weak CYPlayerDecoder *weakDecoder = _decoder;
     
-    const CGFloat duration = _decoder.isNetwork ? 1.0f : 0.1f;
+    const CGFloat duration = _decoder.isNetwork ? 0.1f : 0.01f;
     dispatch_async(_asyncDecodeQueue, ^{
         __strong CYFFmpegPlayer *strongSelf = weakSelf;
         if (strongSelf)

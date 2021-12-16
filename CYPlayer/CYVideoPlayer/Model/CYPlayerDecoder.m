@@ -1000,8 +1000,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
     if (_dstWidth > 0) {
         return _dstWidth;
     }
-    NSUInteger width = _videoCodecCtx->width;
-    NSUInteger height = _videoCodecCtx->height;
+    int width = _videoCodecCtx->width;
+    int height = _videoCodecCtx->height;
     get_video_scale_max_size(_videoCodecCtx, &width, &height);
     return width ? width : 0;
 }
@@ -1012,8 +1012,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
     {
         return _dstHeight;
     }
-    NSUInteger width = _videoCodecCtx->width;
-    NSUInteger height = _videoCodecCtx->height;
+    int width = _videoCodecCtx->width;
+    int height = _videoCodecCtx->height;
     get_video_scale_max_size(_videoCodecCtx, &width, &height);
     return height ? height : 0;
 }
@@ -1218,6 +1218,7 @@ extern  URLProtocol ff_libsmbclient_protocol;
 //    av_dict_set_int(&_options, "video_track_timescale", 25, 0);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
+    av_dict_set(&_options, "buffer_size", "1024000", 0);
     
 //#ifdef aaa
     int ret;
@@ -1301,8 +1302,12 @@ extern  URLProtocol ff_libsmbclient_protocol;
         const NSUInteger iStream = n.integerValue;
 
         if (0 == (_formatCtx->streams[iStream]->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
-        
-            errCode = [self openVideoStream: iStream];
+            if (1) {
+                errCode = [self openHWVideoStream: iStream];
+            } else {
+                errCode = [self openVideoStream: iStream];
+            }
+            
             if (errCode == cyPlayerErrorNone)
                 break;
             
@@ -1313,6 +1318,187 @@ extern  URLProtocol ff_libsmbclient_protocol;
     }
     
     return errCode;
+}
+
+- (AVCodecContext *)createVideoEncderWithFormatContext:(AVFormatContext *)formatContext stream:(AVStream *)stream videoStreamIndex:(int)videoStreamIndex {
+    AVCodecContext *codecContext = NULL;
+    AVCodec *codec = NULL;
+    
+    NSString * kModuleName = @"createVideoEncderWithFormatContext";
+    // 指定解码器名称, 这里使用苹果VideoToolbox中的硬件解码器
+    const char *codecName = av_hwdevice_get_type_name(AV_HWDEVICE_TYPE_VIDEOTOOLBOX);
+    // 将解码器名称转为对应的枚举类型
+    enum AVHWDeviceType type = av_hwdevice_find_type_by_name(codecName);
+    if (type != AV_HWDEVICE_TYPE_VIDEOTOOLBOX) {
+        LoggerVideo(kModuleName, @"%s: Not find hardware codec.",__func__);
+        return NULL;
+    }
+    
+    // 根据解码器枚举类型找到解码器
+    int ret = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, &codec, 0);
+    if (ret < 0) {
+        LoggerVideo(kModuleName, @"av_find_best_stream faliture");
+        return NULL;
+    }
+    
+    // 为解码器上下文对象分配内存
+    codecContext = avcodec_alloc_context3(codec);
+    if (!codecContext){
+        LoggerVideo(kModuleName, @"avcodec_alloc_context3 faliture");
+        return NULL;
+    }
+    
+    // 将视频流中的参数填充到视频解码器中
+    ret = avcodec_parameters_to_context(codecContext, formatContext->streams[videoStreamIndex]->codecpar);
+    if (ret < 0){
+        LoggerVideo(kModuleName, @"avcodec_parameters_to_context faliture");
+        return NULL;
+    }
+    
+    // 创建硬件解码器上下文
+    ret = InitHardwareDecoder(codecContext, type);
+    if (ret < 0){
+        LoggerVideo(kModuleName, @"hw_decoder_init faliture");
+        return NULL;
+    }
+    
+    // 初始化解码器上下文对象
+    ret = avcodec_open2(codecContext, codec, NULL);
+    if (ret < 0) {
+        LoggerVideo(kModuleName, @"avcodec_open2 faliture");
+        return NULL;
+    }
+    
+    return codecContext;
+}
+
+#pragma mark - C Function
+AVBufferRef *hw_device_ctx = NULL;
+static int InitHardwareDecoder(AVCodecContext *ctx, const enum AVHWDeviceType type) {
+    int err = av_hwdevice_ctx_create(&hw_device_ctx, type, NULL, NULL, 0);
+    if (err < 0) {
+        LoggerVideo(@"XDXParseParse", @"Failed to create specified HW device.\n");
+        return err;
+    }
+    ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+    return err;
+}
+
+- (cyPlayerError) openHWVideoStream: (NSInteger) videoStream
+{
+    // get a pointer to the codec context for the video stream
+    
+    AVCodecContext *codecContext = NULL;
+    AVCodec *codec = NULL;
+//    AVStream * video_Stream      = _formatCtx->streams[videoStream];
+    // 指定解码器名称, 这里使用苹果VideoToolbox中的硬件解码器
+    const char *codecName = av_hwdevice_get_type_name(AV_HWDEVICE_TYPE_VIDEOTOOLBOX);
+    // 将解码器名称转为对应的枚举类型
+    enum AVHWDeviceType type = av_hwdevice_find_type_by_name(codecName);
+    if (type != AV_HWDEVICE_TYPE_VIDEOTOOLBOX) {
+        LoggerVideo(kModuleName, @"%s: Not find hardware codec.",__func__);
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    // 根据解码器枚举类型找到解码器
+    int ret = av_find_best_stream(_formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &codec, 0);
+    if (ret < 0) {
+        LoggerVideo(kModuleName, @"av_find_best_stream faliture");
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    if (!codec) {
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    // 为解码器上下文对象分配内存
+    codecContext = avcodec_alloc_context3(codec);
+    if (!codecContext){
+        LoggerVideo(kModuleName, @"avcodec_alloc_context3 faliture");
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    // 将视频流中的参数填充到视频解码器中
+    ret = avcodec_parameters_to_context(codecContext, _formatCtx->streams[videoStream]->codecpar);
+    if (ret < 0){
+        LoggerVideo(kModuleName, @"avcodec_parameters_to_context faliture");
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    // 创建硬件解码器上下文
+    ret = InitHardwareDecoder(codecContext, type);
+    if (ret < 0){
+        LoggerVideo(kModuleName, @"hw_decoder_init faliture");
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    // 初始化解码器上下文对象
+    ret = avcodec_open2(codecContext, codec, NULL);
+    if (ret < 0) {
+        LoggerVideo(kModuleName, @"avcodec_open2 faliture");
+        return cyPlayerErrorCodecNotFound;
+    }
+    
+    AVCodecContext *codecCtx = codecContext;
+//    avcodec_parameters_to_context(codecCtx, video_Stream->codecpar);
+
+    
+    // find the decoder for the video stream
+//    AVCodec *codec = avcodec_find_decoder(codecCtx->codec_id);
+//    if (!codec)
+//        return cyPlayerErrorCodecNotFound;
+    
+    // inform the codec that we can handle truncated bitstreams -- i.e.,
+    // bitstreams where frame boundaries can fall in the middle of packets
+//    if(codec->capabilities & CODEC_CAP_TRUNCATED)
+//    {
+//        codecCtx->flags |= CODEC_FLAG_TRUNCATED;
+//    }
+    codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    codecCtx->thread_count = 4;
+//    codecCtx->thread_type = FF_THREAD_FRAME;
+    // open codec
+//    if (avcodec_open2(codecCtx, codec, NULL) < 0)
+//        return cyPlayerErrorOpenCodec;
+        
+    _videoFrame = av_frame_alloc();
+    _videoFrame1 = av_frame_alloc();
+    _videoFrame2 = av_frame_alloc();
+    _videoFrame3 = av_frame_alloc();
+    _videoFrame4 = av_frame_alloc();
+
+    if (!_videoFrame || !_videoFrame1 || !_videoFrame2 || !_videoFrame3 || !_videoFrame4) {
+        avcodec_free_context(&codecCtx);
+        return cyPlayerErrorAllocateFrame;
+    }
+    
+    _videoStream = videoStream;
+    _videoCodecCtx = codecCtx;
+    
+//    unsigned char *dummy=NULL;   //输入的指针
+//    int dummy_len;
+//    AVBitStreamFilterContext* bsfc =  av_bitstream_filter_init("h264_mp4toannexb");
+//    av_bitstream_filter_filter(bsfc, _videoCodecCtx, NULL, &dummy, &dummy_len, NULL, 0, 0);
+//    av_bitstream_filter_close(bsfc);
+//    free(dummy);
+    
+    // determine fps
+    AVStream *st = _formatCtx->streams[_videoStream];
+    avStreamFPSTimeBase(st, 0.04, &_fps, &_videoTimeBase);
+    
+    LoggerVideo(1, @"video codec size: %d:%d fps: %.3f tb: %f",
+                (int)(self.frameWidth),
+                (int)(self.frameHeight),
+                _fps,
+                _videoTimeBase);
+    
+    LoggerVideo(1, @"video start time %f", st->start_time * _videoTimeBase);
+    LoggerVideo(1, @"video disposition %d", st->disposition);
+    
+    st = NULL;
+    
+//    AVHWAccel *pp = ff_find_hwaccel(_videoCodecCtx->codec_id, _videoCodecCtx->pix_fmt);
+    return cyPlayerErrorNone;
 }
 
 - (cyPlayerError) openVideoStream: (NSInteger) videoStream
@@ -1337,6 +1523,8 @@ extern  URLProtocol ff_libsmbclient_protocol;
 //        codecCtx->flags |= CODEC_FLAG_TRUNCATED;
 //    }
     codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    codecCtx->thread_count = 4;
+//    codecCtx->thread_type = FF_THREAD_FRAME;
     // open codec
     if (avcodec_open2(codecCtx, codec, NULL) < 0)
         return cyPlayerErrorOpenCodec;
@@ -1935,10 +2123,10 @@ int video_direction(AVCodecContext *videoCodecCtx)
 void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * height)
 {
     
-//    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].scale;
-//    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
-    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;
-    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;
+    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].scale;
+    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
+//    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;
+//    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;
     
     *width = videoCodecCtx->width;
     *height = videoCodecCtx->height;
@@ -2086,7 +2274,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         return NO;
     }
 #ifdef DEBUG
-    NSLog(@"Dynamic FPS: %d", (int)t_fps);
+//    NSLog(@"Dynamic FPS: %d", (int)t_fps);
 #endif
     //符合降帧规则的帧,丢弃
     CGFloat discard_rate = (o_fps - t_fps) / o_fps;//(30 - 25) / 30  原有30fps的视频降帧到25fps,降帧率为1/6(六分之一)
@@ -2131,7 +2319,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     int height = _videoCodecCtx->height;
     if (!(_dstWidth > 0 && _dstHeight > 0))
     {
-//        get_video_scale_max_size(_videoCodecCtx, &width, &height);
+        get_video_scale_max_size(_videoCodecCtx, &width, &height);
         _dstWidth = width;
         _dstHeight = height;
     }
@@ -2273,7 +2461,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     int height = _videoCodecCtx->height;
     if (!(_dstWidth > 0 && _dstHeight > 0))
     {
-//        get_video_scale_max_size(_videoCodecCtx, &width, &height);
+        get_video_scale_max_size(_videoCodecCtx, &width, &height);
         _dstWidth = width;
         _dstHeight = height;
     }
@@ -2726,7 +2914,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             
             dispatch_semaphore_wait([CYGCDManager sharedManager].av_read_frame_lock, DISPATCH_TIME_FOREVER);//加锁
             
-            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+//            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             ///读取下一帧开始
             if (av_read_frame(strongSelf->_formatCtx, packet) < 0) {
                 strongSelf->_isEOF = YES;
@@ -2734,7 +2922,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);//放行
                 break;
             }
-             CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+//             CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
 #ifdef DEBUG
 //            NSLog(@"av_read_frame in %.2f ms", linkTime * 1000.0);
 #endif
@@ -3352,33 +3540,33 @@ error:
                 case FF_PROFILE_H264_BASELINE:
                 {
                     [self.hwDecompressor decompressWithPacket:packet Completed:^(CVPixelBufferRef imageBuffer, int64_t pkt_pts, int64_t pkt_duration) {
-                        
+
                         if (imageBuffer == NULL) {
-                            
+
                             CYVideoFrame * frame;
-                            
+
                             CGFloat position = pkt_pts * _videoTimeBase;
                             CGFloat duration = pkt_duration * _videoTimeBase * self.rate;
-                            
+
                             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
                             yuvFrame.position = position;
                             yuvFrame.duration = duration;
-                            
+
                             result_frame = yuvFrame;
-      
+
                         }else {
                             CYVideoFrame * frame;
-                            
+
                             CGFloat position = pkt_pts * _videoTimeBase;
                             CGFloat duration = pkt_duration * _videoTimeBase * self.rate;
-                            
-                            
+
+
                             CVPixelBufferLockBaseAddress(imageBuffer, 0);
-                            
+
                             int width = (int)CVPixelBufferGetWidth(imageBuffer);
                             int height = (int)CVPixelBufferGetHeight(imageBuffer);
-                            
-                            
+
+
                             if (_videoFrameFormat == CYVideoFrameFormatYUV)
                             {
                                 // yuv每 的字节数与总
@@ -3392,20 +3580,20 @@ error:
                                 Byte* chromaB = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
                                 // cr的数据， 度:crBytes*height/2
                                 Byte* chromaR = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 2);
-                                
+
                                 CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
-                                
+
                                 if (luma) yuvFrame.luma = [NSData dataWithBytes:luma length:yBytes*height];
-                                
+
                                 if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
-                                
+
                                 if(chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
-                                
+
                                 struct CYPixelBufferBytesPerRowOfPlane p = {yBytes, cbBytes, crBytes};
                                 yuvFrame.bytesPerRowOfPlans = p;
-                                
+
                                 frame = yuvFrame;
-                                
+
                                 frame.width = width;
                                 frame.height = height;
                                 frame.position = position;
@@ -3413,34 +3601,34 @@ error:
                             }
                             else
                             {
-                                
+
                             }
-                            
+
                             if (frame)
                             {
                                 result_frame = frame;
                             }
-                            
+
                             CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
                         }
                     }];
                 }
                     break;
-                
+
                 default:
                 {
                     CVPixelBufferRef imageBuffer = [self.hwDecompressor deCompressedCMSampleBufferWithData:packet andOffset:0];
-                    
-                    
+
+
                     CYVideoFrame * frame;
-                    
+
                     CGFloat position = packet->pts * _videoTimeBase;
                     CGFloat duration = packet->duration * _videoTimeBase * self.rate;
-                    
+
                     int width = (int)CVPixelBufferGetWidth(imageBuffer);
                     int height = (int)CVPixelBufferGetHeight(imageBuffer);
-                    
-                    
+
+
                     if (_videoFrameFormat == CYVideoFrameFormatYUV)
                     {
                         // yuv每 的字节数与总
@@ -3454,19 +3642,19 @@ error:
                         Byte* chromaB = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
                         // cr的数据， 度:crBytes*height/2
                         Byte* chromaR = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 2);
-                        
+
                         CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
                         if (luma) yuvFrame.luma = [NSData dataWithBytes:luma length:yBytes*height];
-                        
+
                         if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
-                        
+
                         if (chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
-                        
+
                         struct CYPixelBufferBytesPerRowOfPlane p = {yBytes, cbBytes, crBytes};
                         yuvFrame.bytesPerRowOfPlans = p;
-                        
+
                         frame = yuvFrame;
-                        
+
                         frame.width = width;
                         frame.height = height;
                         frame.position = position;
@@ -3474,14 +3662,14 @@ error:
                     }
                     else
                     {
-                        
+
                     }
-                    
+
                     if (frame)
                     {
                         result_frame = frame;
                     }
-                    
+
                     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
                     CVPixelBufferRelease(imageBuffer);
                 }
@@ -3502,7 +3690,7 @@ error:
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
                 CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
 #ifdef DEBUG
-//                NSLog(@"avcodec_send_receive_packet in %.2f ms", linkTime * 1000.0);
+                NSLog(@"avcodec_send_receive_packet in %.2f ms", linkTime * 1000.0);
 #endif
                 dispatch_semaphore_signal([CYGCDManager sharedManager].av_send_receive_packet_lock);
                 

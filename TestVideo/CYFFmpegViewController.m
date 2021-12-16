@@ -116,14 +116,14 @@
             return 3;//假设上次播放到了第四节
         };
         settings.nextAutoPlaySelectionsPath = ^NSString *{
-            return @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+            return @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
         };
         //        settings.useHWDecompressor = YES;
         //        settings.enableProgressControl = NO;
     }];
     vc1.delegate = self;
     vc1.autoplay = YES;
-    vc1.generatPreviewImages = NO;
+    vc1.generatPreviewImages = YES;
     [self.contentView1 addSubview:vc1.view];
     
     [vc1.view mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -182,14 +182,14 @@
             return 3;//假设上次播放到了第四节
         };
         settings.nextAutoPlaySelectionsPath = ^NSString *{
-            return @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+            return @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
         };
-        //        settings.useHWDecompressor = YES;
+//        settings.useHWDecompressor = YES;
         //        settings.enableProgressControl = NO;
     }];
     vc.delegate = self;
     vc.autoplay = YES;
-    vc.generatPreviewImages = YES;
+    vc.generatPreviewImages = NO;
     [self.contentView addSubview:vc.view];
     
     [vc.view mas_makeConstraints:^(MASConstraintMaker *make) {
