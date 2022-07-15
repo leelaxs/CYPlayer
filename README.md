@@ -1,8 +1,16 @@
+![release](https://badgen.net/github/release/yellowei/CYPlayer)
+![issues](https://img.shields.io/github/issues/yellowei/CYPlayer)
+![forks](https://img.shields.io/github/forks/yellowei/CYPlayer)
+![stars](https://img.shields.io/github/stars/yellowei/CYPlayer)
+![license](https://img.shields.io/github/license/yellowei/CYPlayer)
+
+
 # CYPlayer
+
+CYPlayer是一个基于FFmpeg作为解码内核的播放器SDK，并且同时支持AVKit，支持左右滑动手势来调整视频播放进度、上下滑动手势调节音量大小等等各种手势，并且支持全屏播放， 支持横竖屏控制，采用自动布局Autolayout（Masonry）。此外，CYPlayer已经在Cocoapods发布，直接通过pods安装就可以使用。代码已做了UI和解码核心的分离，将解码核心ffmpeg部分单独打包为CYFFmpeg（如果只需用到ffmpeg，直接pods安装此CYFFmpeg即可），CYFFmpeg支持还支持ffmpeg命令行方式的调用。
 
 ![Logo](https://raw.githubusercontent.com/yellowei/CYPlayer/master/icon-2.png)     ![ffmpeg](https://raw.githubusercontent.com/yellowei/CYPlayer/master/ffmpeg_logo.png)
 
-和程序员本身一样，都在默默地发光！
 
 ## 通过cocoapods安装播放器到项目
 
