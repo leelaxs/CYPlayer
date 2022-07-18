@@ -1,8 +1,9 @@
-![release](https://badgen.net/github/release/yellowei/CYPlayer)
-![issues](https://img.shields.io/github/issues/yellowei/CYPlayer)
-![forks](https://img.shields.io/github/forks/yellowei/CYPlayer)
-![stars](https://img.shields.io/github/stars/yellowei/CYPlayer)
-![license](https://img.shields.io/github/license/yellowei/CYPlayer)
+[![Version](https://img.shields.io/cocoapods/v/CYPlayer.svg?style=flat)](http://cocoapods.org/pods/CYPlayer)
+[![release](https://badgen.net/github/release/yellowei/CYPlayer)](https://github.com/yellowei/CYPlayer/releases)
+[![issues](https://img.shields.io/github/issues/yellowei/CYPlayer)](https://github.com/yellowei/CYPlayer/issues)
+[![forks](https://img.shields.io/github/forks/yellowei/CYPlayer)](https://github.com/yellowei/CYPlayer/fork)
+[![stars](https://img.shields.io/github/stars/yellowei/CYPlayer)](https://github.com/yellowei/CYPlayer/star)
+[![license](https://img.shields.io/github/license/yellowei/CYPlayer)](https://github.com/yellowei/CYPlayer/blob/master/LICENSE)
 
 
 # CYPlayer
