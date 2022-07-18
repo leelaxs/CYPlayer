@@ -268,7 +268,7 @@
                 make.width.equalTo(_selectionsBtn.mas_width);
                 make.centerY.equalTo(_playBtn);
                 make.height.equalTo(@(20));
-                make.leading.equalTo(_progressSlider.mas_trailing);
+                make.leading.equalTo(_progressSlider.mas_trailing).offset(8);
             }];
              //清晰度btn
             [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
@@ -301,7 +301,7 @@
                 make.width.equalTo(_selectionsBtn.mas_width);
                 make.centerY.equalTo(_playBtn);
                 make.height.equalTo(@(20));
-                make.leading.equalTo(_progressSlider.mas_trailing);
+                make.leading.equalTo(_progressSlider.mas_trailing).offset(8);
             }];
             
             [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {

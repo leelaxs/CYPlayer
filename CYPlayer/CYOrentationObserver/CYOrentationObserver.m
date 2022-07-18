@@ -72,6 +72,12 @@
 
 //适用于系统自动横屏的app
 - (void)setFullScreen:(BOOL)fullScreen {
+    
+//    if (@available(iOS 14.0, *)) {
+//        
+//    } else {
+//        
+//    }
     if ( self.rotationCondition ) {
         if ( !self.rotationCondition(self) )
         {

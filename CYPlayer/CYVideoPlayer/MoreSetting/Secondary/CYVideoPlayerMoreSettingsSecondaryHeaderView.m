@@ -42,13 +42,13 @@
     [self addSubview:self.line];
     [self addSubview:self.titleLabel];
     
-    [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_titleLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.leading.offset(15);
         make.trailing.offset(-8);
         make.top.bottom.offset(0);
     }];
     
-    [_line mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_line mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.leading.equalTo(_titleLabel);
         make.bottom.trailing.offset(0);
         make.height.offset(1);

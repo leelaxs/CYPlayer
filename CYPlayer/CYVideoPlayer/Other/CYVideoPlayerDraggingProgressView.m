@@ -51,7 +51,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     [self addSubview:self.progressLabel];
     [self addSubview:self.progressSlider];
     
-    [_imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_imageView mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.bottom.equalTo(_progressLabel.mas_top).offset(-12);
         make.centerX.offset(0);
         //        make.width.offset(120);
@@ -59,12 +59,12 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         make.height.equalTo(_imageView.mas_width).multipliedBy(9.f / 16);
     }];
     
-    [_progressLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_progressLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_progressLabel.superview.mas_centerY).offset(20);
         make.centerX.offset(0);
     }];
     
-    [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_progressLabel.mas_bottom).offset(8);
         make.centerX.offset(0);
         //        make.width.offset(54);

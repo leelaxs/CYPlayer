@@ -77,14 +77,14 @@
         make.right.equalTo(@(-8));
     }];
     
-    [_previewBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_previewBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.width.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
         make.right.equalTo(_moreBtn.mas_left).offset(-8);
     }];
     
-    [_titleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_titleBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
         //        make.centerX.equalTo(_titleBtn.superview.mas_centerX);
         make.height.equalTo(@49);
         make.top.equalTo(@0);
