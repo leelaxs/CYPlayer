@@ -29,6 +29,8 @@ pod 'CYPlayer'
 
 [Swift示例 - https://github.com/yellowei/TestCYPlayerSwift](https://github.com/yellowei/TestCYPlayerSwift)
 
+[SwiftUI示例 - https://github.com/yellowei/TestCYPlayerSwiftUI](https://github.com/yellowei/TestCYPlayerSwiftUI)
+
 
 
 ## 播放器基本特性
