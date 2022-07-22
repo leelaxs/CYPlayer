@@ -116,7 +116,7 @@
             return 3;//假设上次播放到了第四节
         };
         settings.nextAutoPlaySelectionsPath = ^NSString *{
-            return @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
+            return @"https://vodplay.yellowei360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
         };
         //        settings.useHWDecompressor = YES;
         //        settings.enableProgressControl = NO;
@@ -182,7 +182,7 @@
             return 3;//假设上次播放到了第四节
         };
         settings.nextAutoPlaySelectionsPath = ^NSString *{
-            return @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
+            return @"https://vodplay.yellowei360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
         };
 //        settings.useHWDecompressor = YES;
         //        settings.enableProgressControl = NO;
@@ -356,28 +356,28 @@
     switch (definition) {
         case CYFFmpegPlayerDefinitionLLD:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4";
         }
             break;
         case CYFFmpegPlayerDefinitionLSD:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
         }
             break;
         case CYFFmpegPlayerDefinitionLHD:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/04ad8e1641699cd71819fe38ec2be506-sd.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/04ad8e1641699cd71819fe38ec2be506-sd.mp4";
         }
             break;
         case CYFFmpegPlayerDefinitionLUD:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/b43889cb2eb86103abb977d2b246cb83-hd.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/b43889cb2eb86103abb977d2b246cb83-hd.mp4";
         }
             break;
             
         default:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
         }
             break;
     }
@@ -396,28 +396,28 @@
     switch (selectionsNum) {
         case 0:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4";
         }
             break;
         case 1:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
         }
             break;
         case 2:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/04ad8e1641699cd71819fe38ec2be506-sd.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/04ad8e1641699cd71819fe38ec2be506-sd.mp4";
         }
             break;
         case 3:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/b43889cb2eb86103abb977d2b246cb83-hd.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/b43889cb2eb86103abb977d2b246cb83-hd.mp4";
         }
             break;
             
         default:
         {
-            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+            url = @"http://vodplay.yellowei360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
         }
             break;
     }

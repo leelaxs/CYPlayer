@@ -103,6 +103,8 @@
 		BC2D7ED524F8F6B000B8A55A /* CYGCDManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2D7ED324F8F6AF00B8A55A /* CYGCDManager.m */; };
 		BC3BE6FE23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */; };
 		BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
+		BC77BCCA276B1F1E0019FAB8 /* 5k120.mkv in Resources */ = {isa = PBXBuildFile; fileRef = BC77BCC9276B1F150019FAB8 /* 5k120.mkv */; };
+		BC77BCCB276B1F210019FAB8 /* 4k60.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BC77BCC8276B1F150019FAB8 /* 4k60.mp4 */; };
 		BC7A698123CC4E5E00B9494D /* CYFFmpegMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698023CC4E5E00B9494D /* CYFFmpegMetalView.m */; };
 		BC7A698923CD7C8900B9494D /* PlayESView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698823CD7C8800B9494D /* PlayESView.m */; };
 		BC7A698E23CD899800B9494D /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698D23CD899800B9494D /* Shaders.metal */; };
@@ -350,6 +352,8 @@
 		BC2D7ED424F8F6AF00B8A55A /* CYGCDManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYGCDManager.h; sourceTree = "<group>"; };
 		BC3BE6FC23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerSelectTableView.h; sourceTree = "<group>"; };
 		BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerSelectTableView.m; sourceTree = "<group>"; };
+		BC77BCC8276B1F150019FAB8 /* 4k60.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 4k60.mp4; sourceTree = SOURCE_ROOT; };
+		BC77BCC9276B1F150019FAB8 /* 5k120.mkv */ = {isa = PBXFileReference; lastKnownFileType = file; path = 5k120.mkv; sourceTree = SOURCE_ROOT; };
 		BC7A697F23CC4E5D00B9494D /* CYFFmpegMetalView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYFFmpegMetalView.h; sourceTree = "<group>"; };
 		BC7A698023CC4E5E00B9494D /* CYFFmpegMetalView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegMetalView.m; sourceTree = "<group>"; };
 		BC7A698723CD7C8800B9494D /* PlayESView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayESView.h; sourceTree = "<group>"; };
@@ -869,6 +873,8 @@
 			children = (
 				84B261B11A46A0AF00C8CAA9 /* Info.plist */,
 				84B261B21A46A0AF00C8CAA9 /* main.m */,
+				BC77BCC8276B1F150019FAB8 /* 4k60.mp4 */,
+				BC77BCC9276B1F150019FAB8 /* 5k120.mkv */,
 				BC8ADA6C22AF9D050091AB1C /* logo.png */,
 				BC8ADA6D22AF9D060091AB1C /* test.mp4 */,
 			);
@@ -1012,6 +1018,8 @@
 			files = (
 				0E2407BC20FE1630008BEAB5 /* CYVideoPlayer.bundle in Resources */,
 				84B261BC1A46A0AF00C8CAA9 /* Main.storyboard in Resources */,
+				BC77BCCA276B1F1E0019FAB8 /* 5k120.mkv in Resources */,
+				BC77BCCB276B1F210019FAB8 /* 4k60.mp4 in Resources */,
 				BCD3E43824E92F1400F896DE /* README.md in Resources */,
 				84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */,
 				BC8ADA6E22AF9D060091AB1C /* logo.png in Resources */,

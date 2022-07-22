@@ -29,10 +29,12 @@
         self.title = @"FFmpegPlayer";
         self.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag: 0];
         NSString * localV = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"mp4"];
+        NSString * localV1 = [[NSBundle mainBundle] pathForResource:@"4k60" ofType:@"mp4"];
+        NSString * localV2 = [[NSBundle mainBundle] pathForResource:@"5k120" ofType:@"mkv"];
         _remoteMovies = @[
-            localV,
-            @"http://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
-            @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
+            localV,localV1,localV2,
+            @"http://vodplay.yellowei360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
+            @"https://vodplay.yellowei360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8",
             @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
             @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
             @"rtmp://live.hkstv.hk.lxdns.com/live/hks",
@@ -49,11 +51,11 @@
             @"smb://192.168.31.217/Downloads/a.avi",
             @"smb://192.168.31.217/Downloads/9533522808.f4v.mp4",
             @"smb://192.168.31.217/Downloads/9533522808.f4v.AVI",
-            @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
+            @"http://vodplay.yellowei360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
             @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/5/23/8/88/304368212387233792_merge.m4a",
             @"smb://guest@172.16.9.10/video/test.mp4",
             @"smb://WORKGROUP;yellowei:1314-Wamq@192.168.31.170/Movie/Marval Movie/04 Thor 2011 BluRay 720p DTS x264-MgB [ETRG].mkv",
-            @"rtmp://play2.yayi360.com/dentalink-vod/530504197284757504_lld?auth_key=1601306667-0-0-79a7fb3d8c2e075ce6843cc7d310f18f"
+            @"rtmp://play2.yellowei360.com/dentalink-vod/530504197284757504_lld?auth_key=1601306667-0-0-79a7fb3d8c2e075ce6843cc7d310f18f"
         ];
         
     }
