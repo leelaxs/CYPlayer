@@ -148,7 +148,7 @@ ViewController.m
     }];
     
     // 初始化播放器
-    vc1 = [CYFFmpegPlayer movieViewWithContentPath:@"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8" parameters:nil];
+    vc1 = [CYFFmpegPlayer movieViewWithContentPath:@"https://vodplay.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8" parameters:nil];
     [vc1 settingPlayer:^(CYVideoPlayerSettings *settings) {
         settings.definitionTypes = CYFFmpegPlayerDefinitionLLD | CYFFmpegPlayerDefinitionLHD | CYFFmpegPlayerDefinitionLSD | CYFFmpegPlayerDefinitionLUD;
         settings.enableSelections = YES;
@@ -156,7 +156,7 @@ ViewController.m
             return 3;//假设上次播放到了第四节
         };
         settings.nextAutoPlaySelectionsPath = ^NSString *{
-            return @"https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
+            return @"https://vodplay.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8";
         };
         //        settings.useHWDecompressor = YES;
         //        settings.enableProgressControl = NO;
@@ -261,7 +261,7 @@ class ViewController: UIViewController {
         })
         
         //初始化播放器
-        player  = CYFFmpegPlayer.movieView(withContentPath: "https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8", parameters: nil) as? CYFFmpegPlayer
+        player  = CYFFmpegPlayer.movieView(withContentPath: "https://vodplay.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8", parameters: nil) as? CYFFmpegPlayer
         
         
         let definition =  CYFFmpegPlayerDefinitionType.LHD.rawValue | CYFFmpegPlayerDefinitionType.LLD.rawValue | CYFFmpegPlayerDefinitionType.LSD.rawValue | CYFFmpegPlayerDefinitionType.LUD.rawValue
@@ -272,7 +272,7 @@ class ViewController: UIViewController {
                 return 3
             }
             settings?.nextAutoPlaySelectionsPath = { () -> String in
-                return "https://vodplay.yayi360.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8"
+                return "https://vodplay.com/liveRecord/46eca58c0ccf5b857fa76cb3c9fea487/dentalink-vod/515197938314592256/2020-08-17-12-18-39_2020-08-17-12-48-39.m3u8"
             }
         })
         
