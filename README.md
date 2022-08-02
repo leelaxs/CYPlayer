@@ -54,7 +54,13 @@ pod 'CYPlayer'
 - [x] ✅ 开箱即用。
 
 
-## 关于解码动态库CYFFmpeg
+## [CYFFmpeg-基于ffmpeg的iOS动态库](https://github.com/yellowei/CYFFmpeg)
+
+用于ios的ffmpeg动态库
+
+实际上0.3.1版本开始，集成ffmpeg、x264、fdk-acc、ffmpeg-cmdctl、sambclient（samba）、openssl于一体
+
+#### 关于解码动态库CYFFmpeg
 
 - [x] ✅ CYFFmpeg可以通过CocoaPods进行安装；
 
@@ -98,11 +104,7 @@ dispatch_semaphore_signal([CYGCDManager sharedManager].av_read_frame_lock);
 
 - [x] ✅ 开箱即用。
 
-
-[CYFFmpeg-基于ffmpeg的iOS动态库](https://github.com/yellowei/CYFFmpeg)
-
-
-
+===========================
 
 ## 示例动图
 
