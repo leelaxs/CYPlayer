@@ -26,7 +26,7 @@ s.pod_target_xcconfig = {
     'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
     'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' ,
     'OTHER_LDFLAGS'            => '$(inherited) -ObjC',
-    'ENABLE_BITCODE'           => 'YES'
+#    'ENABLE_BITCODE'           => 'YES'
 }
 
 
