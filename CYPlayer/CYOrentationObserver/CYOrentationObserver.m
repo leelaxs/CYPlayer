@@ -226,11 +226,14 @@
 - (BOOL)_changeOrientation {
     if ( self.isTransitioning ) return NO;
     if ( self.fullScreen ) {
-        [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationPortrait] forKey:@"orientation"];
+//        [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationPortrait] forKey:@"orientation"];
+        [self xxx_setFullScreen:NO];
     }
     else {
-        [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationLandscapeLeft] forKey:@"orientation"];
+//        [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationLandscapeLeft] forKey:@"orientation"];
+        [self xxx_setFullScreen:YES];
     }
+    
     return YES;
 }
 

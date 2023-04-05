@@ -55,9 +55,9 @@ sss.source_files = 'CYPlayer/CYOrentationObserver/UseNativeOrentation/*.{h,m}'
 end
 
 #如果不想用系统自动横屏, 请解开这个注释,并且切换代码的setFullScreen方法
-#ss.subspec 'UnuseNativeOrentation' do |sss|
-#sss.source_files = 'CYPlayer/CYOrentationObserver/UnuseNativeOrentation/*.{h,m}'
-#end
+ss.subspec 'UnuseNativeOrentation' do |sss|
+sss.source_files = 'CYPlayer/CYOrentationObserver/UnuseNativeOrentation/*.{h,m}'
+end
 
 end
 
