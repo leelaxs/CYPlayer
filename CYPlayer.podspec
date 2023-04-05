@@ -50,9 +50,9 @@ end
 s.subspec 'CYOrentationObserver' do |ss|
 ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
 
-ss.subspec 'UseNativeOrentation' do |sss|
-sss.source_files = 'CYPlayer/CYOrentationObserver/UseNativeOrentation/*.{h,m}'
-end
+#ss.subspec 'UseNativeOrentation' do |sss|
+#sss.source_files = 'CYPlayer/CYOrentationObserver/UseNativeOrentation/*.{h,m}'
+#end
 
 #如果不想用系统自动横屏, 请解开这个注释,并且切换代码的setFullScreen方法
 ss.subspec 'UnuseNativeOrentation' do |sss|
@@ -79,10 +79,10 @@ end
 
 end
 
-s.subspec 'CYVideoPlayerBackGR' do |ss|
-ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
-ss.dependency 'CYPlayer/CYObserverHelper'
-end
+#s.subspec 'CYVideoPlayerBackGR' do |ss|
+#ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
+#ss.dependency 'CYPlayer/CYObserverHelper'
+#end
 
 s.subspec 'CYVideoPlayer' do |ss|
 
